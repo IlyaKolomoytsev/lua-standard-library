@@ -6,8 +6,7 @@ final public class LuaFunctions {
     static public List<LuaValue> toNumber(LuaValue value) {
         LuaValue.Type type = value.getType();
         switch (type) {
-            case integer:
-            case real:
+            case integer, real:
                 return List.of(value);
             case string:
                 String str = value.getStringValue();
