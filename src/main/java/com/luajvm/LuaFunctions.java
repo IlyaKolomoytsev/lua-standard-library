@@ -1,3 +1,5 @@
+package com.luajvm;
+
 import java.util.List;
 
 final public class LuaFunctions {
