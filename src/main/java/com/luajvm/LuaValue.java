@@ -180,7 +180,7 @@ class LuaValue {
     }
 
     public double getRealValue() {
-        if (!isRealValue()) {
+        if (!isNumber()) {
             throwCantGetPrimitiveValue(NUMBER);
         }
         if (type == Type.integer) {
