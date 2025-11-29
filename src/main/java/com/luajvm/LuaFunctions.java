@@ -10,9 +10,16 @@ final public class LuaFunctions {
                 return List.of(value);
             case string:
                 String str = value.getStringValue();
-                // ToDo need write correct converting to number from string.
-                int len = str.length();
-                return List.of(new LuaValue(len));
+                try {
+                    if (str.contains(".")) {
+                        double realNumber = Double.parseDouble(str);
+                        return List.of(new LuaValue(realNumber));
+                    } else {
+                        long intNumber = Integer.parseInt(str);
+                        return List.of(new LuaValue(intNumber));
+                    }
+                } catch (NumberFormatException ignored) {
+                }
             default:
                 return List.of(new LuaValue());
         }
