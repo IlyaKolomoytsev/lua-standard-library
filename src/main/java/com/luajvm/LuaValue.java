@@ -106,6 +106,22 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.ADD_VAlUE, addNumbersFunction);
     }
 
+    public static List<LuaValue> sub(LuaValue left, LuaValue right) {
+        BiFunction<LuaValue, LuaValue, LuaValue> div = (leftNumber, rightNumber) -> {
+            // difference integer values
+            if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
+                long result = leftNumber.getIntegerValue() - rightNumber.getIntegerValue();
+                return new LuaValue(result);
+            }
+            // difference real values
+            else {
+                double result = leftNumber.getRealValue() - rightNumber.getRealValue();
+                return new LuaValue(result);
+            }
+        };
+        return arithmeticOperation(left, right, LuaMetatable.SUB_VAlUE, div);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
