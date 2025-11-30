@@ -106,6 +106,28 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.ADD_VAlUE, addNumbersFunction);
     }
 
+    static <T> LuaValue create(T value) {
+        if (value == null) {
+            return new LuaValue();
+        } else if (value instanceof Boolean) {
+            return new LuaValue((boolean) value);
+        } else if (value instanceof Integer || value instanceof Long) {
+            return new LuaValue(((Number) value).longValue());
+        } else if (value instanceof Float || value instanceof Double) {
+            return new LuaValue((double) value);
+        } else if (value instanceof String) {
+            return new LuaValue((String) value);
+        } else if (value instanceof Function) {
+            return new LuaValue((Function<List<LuaValue>, List<LuaValue>>) value);
+        } else if (value instanceof Map) {
+            return new LuaValue((Map<LuaValue, LuaValue>) value);
+        } else if (value instanceof LuaValue) {
+            return (LuaValue) value;
+        } else {
+            throw new ClassCastException("LuaValue does not support type: " + value.getClass().getName());
+        }
+    }
+
     LuaValue() {
         type = Type.nil;
     }
