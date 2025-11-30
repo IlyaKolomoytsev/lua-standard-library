@@ -209,7 +209,7 @@ class LuaValue {
     }
 
     public Map<LuaValue, LuaValue> getTableValue() {
-        if (isTableValue()) {
+        if (!isTableValue()) {
             throwCantGetPrimitiveValue(TABLE);
         }
         return tableValue;
