@@ -150,6 +150,10 @@ class LuaValue {
         tableValue = value;
     }
 
+    public void setMetatable(LuaValue metatable) {
+        this.metatable = metatable;
+    }
+
     public Type getType() {
         return type;
     }
@@ -212,10 +216,11 @@ class LuaValue {
     }
 
     public LuaValue getMetatable() {
-        if (isTableValue()) {
-            throw new UnsupportedOperationException("Can't get metatable for '" + getTypeString() + "' type.");
+        if (metatable == null || type != Type.table) {
+            return new LuaValue();
+        } else {
+            return metatable;
         }
-        return new LuaValue(metatable);
     }
 
     private void throwCantGetPrimitiveValue(String primitive) {
@@ -239,5 +244,5 @@ class LuaValue {
     private String stringValue = null;
     private Function<List<LuaValue>, List<LuaValue>> functionValue = null;
     private Map<LuaValue, LuaValue> tableValue = null;
-    private Map<LuaValue, LuaValue> metatable = null;
+    private LuaValue metatable = null;
 }
