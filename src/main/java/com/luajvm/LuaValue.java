@@ -3,6 +3,7 @@ package com.luajvm;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
@@ -55,53 +56,54 @@ class LuaValue {
         };
     }
 
-    public static List<LuaValue> add(LuaValue left, LuaValue right) {
+    private static List<LuaValue> arithmeticOperation(LuaValue left, LuaValue right, LuaValue metamethod, BiFunction<LuaValue, LuaValue, LuaValue> operationForNumbers) {
         // try to reduce values to numbers
         LuaValue leftNumber = LuaFunctions.toNumber(left).getFirst();
         LuaValue rightNumber = LuaFunctions.toNumber(right).getFirst();
-        // use add operation for numbers
+        // use operation for numbers
         if (leftNumber.isNumber() && rightNumber.isNumber()) {
-            LuaValue resultValue; // value of arguments sum
-            // sum integer values
-            if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
-                long result = leftNumber.getIntegerValue() + rightNumber.getIntegerValue();
-                resultValue = new LuaValue(result);
-            }
-            // sum real values
-            else {
-                double result = leftNumber.getRealValue() + rightNumber.getRealValue();
-                resultValue = new LuaValue(result);
-            }
-            //return result
-            return List.of(resultValue);
-
+            return List.of(operationForNumbers.apply(leftNumber, rightNumber));
         }
         // use metatables functions
         else {
-            // get add function from metatables
+            // get function from metatables
             LuaValue leftMetatable = left.getMetatable();
             LuaValue rightMetatable = right.getMetatable();
-            Function<List<LuaValue>, List<LuaValue>> addFunction = null;
+            Function<List<LuaValue>, List<LuaValue>> function = null;
+            boolean addExistInLeft = leftMetatable.isTableValue() && leftMetatable.getTableValue().containsKey(metamethod);
+            boolean addExistInRight = rightMetatable.isTableValue() && rightMetatable.getTableValue().containsKey(metamethod);
             // use function from left metatable
-            boolean addExistInLeft = leftMetatable.isTableValue() && leftMetatable.getTableValue().containsKey(LuaMetatable.ADD_VAlUE);
-            boolean addExistInRight = rightMetatable.isTableValue() && rightMetatable.getTableValue().containsKey(LuaMetatable.ADD_VAlUE);
             if (addExistInLeft) {
-                addFunction = leftMetatable.getTableValue().get(LuaMetatable.ADD_VAlUE).getFunctionValue();
+                function = leftMetatable.getTableValue().get(metamethod).getFunctionValue();
             }
             // use function from right metatable
             else if (addExistInRight) {
-                addFunction = rightMetatable.getTableValue().get(LuaMetatable.ADD_VAlUE).getFunctionValue();
+                function = rightMetatable.getTableValue().get(metamethod).getFunctionValue();
             }
-            // throw exception if the "add" function is not found
+            // throw exception if function is not found
             else {
                 LuaValue unsupportedAddValue = leftNumber.isNumber() ? right : left;
                 throw new LuaRuntimeException("perform arithmetic on", unsupportedAddValue);
             }
             // return result of function call
-            return addFunction.apply(List.of(left, right));
+            return function.apply(List.of(left, right));
         }
+    }
 
-
+    public static List<LuaValue> add(LuaValue left, LuaValue right) {
+        BiFunction<LuaValue, LuaValue, LuaValue> addNumbersFunction = (leftNumber, rightNumber) -> {
+            // sum integer values
+            if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
+                long result = leftNumber.getIntegerValue() + rightNumber.getIntegerValue();
+                return new LuaValue(result);
+            }
+            // sum real values
+            else {
+                double result = leftNumber.getRealValue() + rightNumber.getRealValue();
+                return new LuaValue(result);
+            }
+        };
+        return arithmeticOperation(left, right, LuaMetatable.ADD_VAlUE, addNumbersFunction);
     }
 
     LuaValue() {
