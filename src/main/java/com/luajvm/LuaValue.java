@@ -22,6 +22,26 @@ class LuaValue {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof LuaValue)) {
+            return false;
+        }
+        LuaValue value = (LuaValue) obj;
+        if (value.type != type) {
+            return false;
+        } else {
+            return switch (type) {
+                case nil -> true;
+                case bool -> value.getBoolValue() == this.getBoolValue();
+                case integer, real -> value.getRealValue() == this.getRealValue();
+                case string -> value.getStringValue().equals(this.getStringValue());
+                case function -> value.getFunctionValue() == this.getFunctionValue(); // compare pointers
+                case table -> value.getTableValue() == this.getTableValue(); // compare pointers
+            };
+        }
+    }
+
     LuaValue() {
         type = Type.nil;
     }
