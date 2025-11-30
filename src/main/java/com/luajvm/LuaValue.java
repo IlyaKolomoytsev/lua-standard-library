@@ -202,7 +202,7 @@ class LuaValue {
     }
 
     public Function<List<LuaValue>, List<LuaValue>> getFunctionValue() {
-        if (isFunctionValue()) {
+        if (!isFunctionValue()) {
             throwCantGetPrimitiveValue(FUNCTION);
         }
         return functionValue;
