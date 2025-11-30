@@ -55,6 +55,55 @@ class LuaValue {
         };
     }
 
+    public static List<LuaValue> add(LuaValue left, LuaValue right) {
+        // try to reduce values to numbers
+        LuaValue leftNumber = LuaFunctions.toNumber(left).getFirst();
+        LuaValue rightNumber = LuaFunctions.toNumber(right).getFirst();
+        // use add operation for numbers
+        if (leftNumber.isNumber() && rightNumber.isNumber()) {
+            LuaValue resultValue; // value of arguments sum
+            // sum integer values
+            if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
+                long result = leftNumber.getIntegerValue() + rightNumber.getIntegerValue();
+                resultValue = new LuaValue(result);
+            }
+            // sum real values
+            else {
+                double result = leftNumber.getRealValue() + rightNumber.getRealValue();
+                resultValue = new LuaValue(result);
+            }
+            //return result
+            return List.of(resultValue);
+
+        }
+        // use metatables functions
+        else {
+            // get add function from metatables
+            LuaValue leftMetatable = left.getMetatable();
+            LuaValue rightMetatable = right.getMetatable();
+            Function<List<LuaValue>, List<LuaValue>> addFunction = null;
+            // use function from left metatable
+            boolean addExistInLeft = leftMetatable.isTableValue() && leftMetatable.getTableValue().containsKey(LuaMetatable.ADD_VAlUE);
+            boolean addExistInRight = rightMetatable.isTableValue() && rightMetatable.getTableValue().containsKey(LuaMetatable.ADD_VAlUE);
+            if (addExistInLeft) {
+                addFunction = leftMetatable.getTableValue().get(LuaMetatable.ADD_VAlUE).getFunctionValue();
+            }
+            // use function from right metatable
+            else if (addExistInRight) {
+                addFunction = rightMetatable.getTableValue().get(LuaMetatable.ADD_VAlUE).getFunctionValue();
+            }
+            // throw exception if the "add" function is not found
+            else {
+                LuaValue unsupportedAddValue = leftNumber.isNumber() ? right : left;
+                throw new LuaRuntimeException("perform arithmetic on", unsupportedAddValue);
+            }
+            // return result of function call
+            return addFunction.apply(List.of(left, right));
+        }
+
+
+    }
+
     LuaValue() {
         type = Type.nil;
     }
