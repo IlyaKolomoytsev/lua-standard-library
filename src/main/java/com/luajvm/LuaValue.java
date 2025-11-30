@@ -2,6 +2,7 @@ package com.luajvm;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 
@@ -40,6 +41,18 @@ class LuaValue {
                 case table -> value.getTableValue() == this.getTableValue(); // compare pointers
             };
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return switch (type) {
+            case nil -> Objects.hash(type);
+            case bool -> Objects.hash(type, boolValue);
+            case integer, real -> Objects.hash(type, getRealValue());
+            case string -> Objects.hash(type, stringValue);
+            case function -> Objects.hash(type, functionValue);
+            case table -> Objects.hash(type, tableValue);
+        };
     }
 
     LuaValue() {
