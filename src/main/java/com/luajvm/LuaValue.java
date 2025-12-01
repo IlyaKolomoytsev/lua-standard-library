@@ -146,6 +146,22 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.DIV_VAlUE, divNumbersFunction);
     }
 
+    public static List<LuaValue> mod(LuaValue left, LuaValue right) {
+        BiFunction<LuaValue, LuaValue, LuaValue> modNumbersFunction = (leftNumber, rightNumber) -> {
+            // for integer values
+            if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
+                long result = leftNumber.getIntegerValue() % rightNumber.getIntegerValue();
+                return new LuaValue(result);
+            }
+            // for real values
+            else {
+                double result = leftNumber.getRealValue() % rightNumber.getRealValue();
+                return new LuaValue(result);
+            }
+        };
+        return arithmeticOperation(left, right, LuaMetatable.MOD_VAlUE, modNumbersFunction);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
