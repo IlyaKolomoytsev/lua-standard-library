@@ -138,6 +138,14 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.MUL_VAlUE, mulNumbersFunction);
     }
 
+    public static List<LuaValue> div(LuaValue left, LuaValue right) {
+        BiFunction<LuaValue, LuaValue, LuaValue> divNumbersFunction = (leftNumber, rightNumber) -> {
+            double result = leftNumber.getRealValue() / rightNumber.getRealValue();
+            return new LuaValue(result);
+        };
+        return arithmeticOperation(left, right, LuaMetatable.DIV_VAlUE, divNumbersFunction);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
