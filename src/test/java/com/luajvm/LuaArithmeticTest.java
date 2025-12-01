@@ -83,6 +83,12 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("mulArguments")
+    public <T1, T2, E> void mulTest(T1 val1, T2 val2, LuaValue.Type type, E expected) {
+        arithmeticTest(val1, val2, type, expected, LuaValue::mul);
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -92,6 +98,12 @@ public class LuaArithmeticTest {
     @MethodSource("exceptionArguments")
     public <T1, T2> void subExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::sub);
+    }
+
+    @ParameterizedTest
+    @MethodSource("exceptionArguments")
+    public <T1, T2> void mulExceptionTest(T1 val1, T2 val2, Arg arg) {
+        arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::mul);
     }
 
     private static Stream<Arguments> addArguments() {
@@ -242,6 +254,77 @@ public class LuaArithmeticTest {
         );
     }
 
+    private static Stream<Arguments> mulArguments() {
+        return Stream.of(
+                // Integer + Integer
+                Arguments.of(0, 0, LuaValue.Type.integer, 0),
+                Arguments.of(0, 1, LuaValue.Type.integer, 0),
+                Arguments.of(1, 0, LuaValue.Type.integer, 0),
+                Arguments.of(1, 2, LuaValue.Type.integer, 2),
+                Arguments.of(0, -1, LuaValue.Type.integer, 0),
+                Arguments.of(-1, 0, LuaValue.Type.integer, 0),
+                Arguments.of(-1, -4, LuaValue.Type.integer, 4),
+                Arguments.of(-10, 10, LuaValue.Type.integer, -100),
+                // Real + Real
+                Arguments.of(0.0d, 0.0d, LuaValue.Type.real, 0.0d),
+                Arguments.of(0d, 1d, LuaValue.Type.real, 0d),
+                Arguments.of(1d, 0d, LuaValue.Type.real, 0d),
+                Arguments.of(1d, 2d, LuaValue.Type.real, 2d),
+                Arguments.of(0d, -1d, LuaValue.Type.real, 0d),
+                Arguments.of(-1d, 0d, LuaValue.Type.real, 0d),
+                Arguments.of(-1d, -4d, LuaValue.Type.real, 4d),
+                Arguments.of(-10d, 10d, LuaValue.Type.real, -100d),
+                Arguments.of(1.25d, 2.26d, LuaValue.Type.real, 2.825d),
+                // Real + Integer and Integer + Real
+                Arguments.of(1, 2.26d, LuaValue.Type.real, 2.26d),
+                Arguments.of(2.26d, 1, LuaValue.Type.real, 2.26d),
+                // String(Integer) + Integer
+                Arguments.of("1", 1, LuaValue.Type.integer, 1),
+                Arguments.of(9, "2", LuaValue.Type.integer, 18),
+                Arguments.of("-1", 1, LuaValue.Type.integer, -1),
+                Arguments.of(9, "-2", LuaValue.Type.integer, -18),
+                // String(Integer) + Real
+                Arguments.of("1", 1d, LuaValue.Type.real, 1d),
+                Arguments.of(9d, "2", LuaValue.Type.real, 18d),
+                Arguments.of("-1", 1d, LuaValue.Type.real, -1d),
+                Arguments.of(9d, "-2", LuaValue.Type.real, -18d),
+                // String(Real) + Integer
+                Arguments.of("1.2", 1, LuaValue.Type.real, 1.2d),
+                Arguments.of(9, "2.1", LuaValue.Type.real, 18.9d),
+                Arguments.of("-1.3", 1, LuaValue.Type.real, -1.3d),
+                Arguments.of(9, "-2.2", LuaValue.Type.real, -19.8d),
+                // String(Real) + Real
+                Arguments.of("1.2", 1d, LuaValue.Type.real, 1.2d),
+                Arguments.of(9d, "2.1", LuaValue.Type.real, 18.9d),
+                Arguments.of("-1.3", 1d, LuaValue.Type.real, -1.3d),
+                Arguments.of(9d, "-2.2", LuaValue.Type.real, -19.8d),
+                // String + String
+                Arguments.of("9", "2", LuaValue.Type.integer, 18),
+                Arguments.of("9", "-2", LuaValue.Type.integer, -18),
+                Arguments.of("-9", "2", LuaValue.Type.integer, -18),
+                Arguments.of("9.1", "2", LuaValue.Type.real, 18.2),
+                Arguments.of("9", "2.1", LuaValue.Type.real, 18.9),
+                Arguments.of("9.1", "2.1", LuaValue.Type.real, 19.11),
+                // Table with metatable operation + Number
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5)), 1, LuaValue.Type.integer, 5),
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5)), 1d, LuaValue.Type.real, 5d),
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5d)), 1, LuaValue.Type.real, 5d),
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5d)), 1d, LuaValue.Type.real, 5d),
+                Arguments.of(1, createTableWithMulMetatableAction(new LuaValue(5)), LuaValue.Type.integer, 5),
+                Arguments.of(1d, createTableWithMulMetatableAction(new LuaValue(5)), LuaValue.Type.real, 5d),
+                Arguments.of(1, createTableWithMulMetatableAction(new LuaValue(5d)), LuaValue.Type.real, 5d),
+                Arguments.of(1d, createTableWithMulMetatableAction(new LuaValue(5d)), LuaValue.Type.real, 5d),
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5)), "1", LuaValue.Type.integer, 5),
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5)), "1.1", LuaValue.Type.real, 5.5d),
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5d)), "1", LuaValue.Type.real, 5d),
+                Arguments.of(createTableWithMulMetatableAction(new LuaValue(5d)), "1.1", LuaValue.Type.real, 5.5d),
+                Arguments.of("1", createTableWithMulMetatableAction(new LuaValue(5)), LuaValue.Type.integer, 5),
+                Arguments.of("1.1", createTableWithMulMetatableAction(new LuaValue(5)), LuaValue.Type.real, 5.5d),
+                Arguments.of(1, createTableWithMulMetatableAction(new LuaValue(5d)), LuaValue.Type.real, 5d),
+                Arguments.of("1.1", createTableWithMulMetatableAction(new LuaValue(5d)), LuaValue.Type.real, 5.5d)
+        );
+    }
+
     private static Stream<Arguments> exceptionArguments() {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -306,6 +389,33 @@ public class LuaArithmeticTest {
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
                 return LuaValue.sub(arg1, val);
+            } else {
+                return List.of(new LuaValue());
+            }
+        }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithMulMetatableAction(LuaValue value) {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        tableContent.put(new LuaValue("value"), value);
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.MUL_VAlUE, new LuaValue((args) -> {
+            LuaValue arg1 = args.get(0);
+            LuaValue arg2 = args.get(1);
+
+            if (arg1.getType() == LuaValue.Type.table) {
+                LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
+                return LuaValue.mul(val, arg2);
+            } else if (arg2.getType() == LuaValue.Type.table) {
+                LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
+                return LuaValue.mul(arg1, val);
             } else {
                 return List.of(new LuaValue());
             }

@@ -122,6 +122,22 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.SUB_VAlUE, div);
     }
 
+    public static List<LuaValue> mul(LuaValue left, LuaValue right) {
+        BiFunction<LuaValue, LuaValue, LuaValue> mulNumbersFunction = (leftNumber, rightNumber) -> {
+            // product of integer values
+            if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
+                long result = leftNumber.getIntegerValue() * rightNumber.getIntegerValue();
+                return new LuaValue(result);
+            }
+            // product of real values
+            else {
+                double result = leftNumber.getRealValue() * rightNumber.getRealValue();
+                return new LuaValue(result);
+            }
+        };
+        return arithmeticOperation(left, right, LuaMetatable.MUL_VAlUE, mulNumbersFunction);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
