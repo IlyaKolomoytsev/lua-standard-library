@@ -162,6 +162,14 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.MOD_VAlUE, modNumbersFunction);
     }
 
+    public static List<LuaValue> pow(LuaValue left, LuaValue right) {
+        BiFunction<LuaValue, LuaValue, LuaValue> powNumbersFunction = (leftNumber, rightNumber) -> {
+            double result = Math.pow(leftNumber.getRealValue(), rightNumber.getRealValue());
+            return new LuaValue(result);
+        };
+        return arithmeticOperation(left, right, LuaMetatable.POW_VAlUE, powNumbersFunction);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
