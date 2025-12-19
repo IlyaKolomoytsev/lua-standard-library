@@ -170,6 +170,37 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.POW_VAlUE, powNumbersFunction);
     }
 
+    public static List<LuaValue> unm(LuaValue left, LuaValue right) {
+        return unm(left);
+    }
+
+    public static List<LuaValue> unm(LuaValue value) {
+        // Convert value to number
+        LuaValue number = LuaFunctions.toNumber(value).getFirst();
+
+        // string number case
+        if (value.type == Type.string && number.isNumber()) {
+            return List.of(new LuaValue(-number.getRealValue()));
+        }
+        // integer case
+        if (number.isIntegerValue()) {
+            return List.of(new LuaValue(-number.getIntegerValue()));
+        }
+        // real case
+        else if (number.isRealValue()) {
+            return List.of(new LuaValue(-number.getRealValue()));
+        }
+        // metatable case
+        else {
+            LuaValue metatable = value.getMetatable();
+            if (metatable.isTableValue() && metatable.getTableValue().containsKey(LuaMetatable.UNM_VAlUE)) {
+                return metatable.getTableValue().get(LuaMetatable.UNM_VAlUE).getFunctionValue().apply(List.of(value));
+            }
+        }
+        // exception
+        throw new LuaRuntimeException("perform arithmetic on", number);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();

@@ -107,6 +107,12 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("unmArguments")
+    public <T1, T2, E> void unmTest(T1 val1, T2 val2, LuaValue.Type type, E expected) {
+        arithmeticTest(val1, val2, type, expected, LuaValue::unm);
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -139,6 +145,12 @@ public class LuaArithmeticTest {
     @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void powExceptionTest(T1 val1, T2 val2, Arg arg) {
+        arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::pow);
+    }
+
+    @ParameterizedTest
+    @MethodSource("exceptionArguments")
+    public <T1, T2> void unmExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::pow);
     }
 
@@ -560,6 +572,28 @@ public class LuaArithmeticTest {
         );
     }
 
+    private static Stream<Arguments> unmArguments() {
+        return Stream.of(
+                // Integer
+                Arguments.of(1, null, LuaValue.Type.integer, -1),
+                Arguments.of(0, null, LuaValue.Type.integer, 0),
+                Arguments.of(-1, null, LuaValue.Type.integer, 1),
+                // Real
+                Arguments.of(1d, null, LuaValue.Type.real, -1d),
+                Arguments.of(0d, null, LuaValue.Type.real, 0d),
+                Arguments.of(-1d, null, LuaValue.Type.real, 1d),
+                // String
+                Arguments.of("1", null, LuaValue.Type.real, -1d),
+                Arguments.of("0", null, LuaValue.Type.real, 0d),
+                Arguments.of("-1", null, LuaValue.Type.real, 1d),
+                Arguments.of("1.0", null, LuaValue.Type.real, -1d),
+                Arguments.of("0.0", null, LuaValue.Type.real, 0d),
+                Arguments.of("-1.0", null, LuaValue.Type.real, 1d),
+                // Table with metatable operation
+                Arguments.of(createTableWithUnmMetatableAction(new LuaValue(5)), null, LuaValue.Type.integer, -5)
+        );
+    }
+
     private static Stream<Arguments> exceptionArguments() {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -732,6 +766,29 @@ public class LuaArithmeticTest {
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
                 return LuaValue.pow(arg1, val);
+            } else {
+                return List.of(new LuaValue());
+            }
+        }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithUnmMetatableAction(LuaValue value) {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        tableContent.put(new LuaValue("value"), value);
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.UNM_VAlUE, new LuaValue((args) -> {
+            LuaValue arg1 = args.getFirst();
+
+            if (arg1.getType() == LuaValue.Type.table) {
+                LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
+                return LuaValue.unm(val);
             } else {
                 return List.of(new LuaValue());
             }
