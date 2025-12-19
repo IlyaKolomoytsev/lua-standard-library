@@ -201,6 +201,17 @@ class LuaValue {
         throw new LuaRuntimeException("perform arithmetic on", number);
     }
 
+    public static List<LuaValue> idiv(LuaValue left, LuaValue right) {
+        BiFunction<LuaValue, LuaValue, LuaValue> powNumbersFunction = (leftNumber, rightNumber) -> {
+            if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
+                return new LuaValue(leftNumber.getIntegerValue() / rightNumber.getIntegerValue());
+            } else {
+                return new LuaValue((long) (leftNumber.getRealValue() / rightNumber.getRealValue()));
+            }
+        };
+        return arithmeticOperation(left, right, LuaMetatable.IDIV_VAlUE, powNumbersFunction);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
