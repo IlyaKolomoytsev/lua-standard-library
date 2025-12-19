@@ -383,21 +383,21 @@ class LuaValue {
 
     public boolean getBoolValue() {
         if (!isBoolValue()) {
-            throwCantGetPrimitiveValue(BOOL);
+            throw getCantGetPrimitiveValueException(BOOL);
         }
         return boolValue;
     }
 
     public long getIntegerValue() {
         if (!isIntegerValue()) {
-            throwCantGetPrimitiveValue(NUMBER);
+            throw getCantGetPrimitiveValueException(NUMBER);
         }
         return integerValue;
     }
 
     public double getRealValue() {
         if (!isNumber()) {
-            throwCantGetPrimitiveValue(NUMBER);
+            throw getCantGetPrimitiveValueException(NUMBER);
         }
         if (type == Type.integer) {
             return integerValue;
@@ -408,21 +408,21 @@ class LuaValue {
 
     public String getStringValue() {
         if (!isStringValue()) {
-            throwCantGetPrimitiveValue(STRING);
+            throw getCantGetPrimitiveValueException(STRING);
         }
         return stringValue;
     }
 
     public Function<List<LuaValue>, List<LuaValue>> getFunctionValue() {
         if (!isFunctionValue()) {
-            throwCantGetPrimitiveValue(FUNCTION);
+            throw getCantGetPrimitiveValueException(FUNCTION);
         }
         return functionValue;
     }
 
     public Map<LuaValue, LuaValue> getTableValue() {
         if (!isTableValue()) {
-            throwCantGetPrimitiveValue(TABLE);
+            throw getCantGetPrimitiveValueException(TABLE);
         }
         return tableValue;
     }
@@ -435,8 +435,8 @@ class LuaValue {
         }
     }
 
-    private void throwCantGetPrimitiveValue(String primitive) {
-        throw new IllegalStateException("Can't return " + primitive + "value for'" + getTypeString() + "'.");
+    private IllegalStateException getCantGetPrimitiveValueException(String primitive) {
+        return new IllegalStateException("Can't return " + primitive + "value for'" + getTypeString() + "'.");
     }
 
     enum Type {
