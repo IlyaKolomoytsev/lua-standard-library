@@ -218,6 +218,38 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.IDIV_VAlUE, powNumbersFunction);
     }
 
+    public static List<LuaValue> concat(LuaValue left, LuaValue right) {
+        // get left string
+        String leftString = null;
+        try {
+            leftString = left.getStringValue();
+        } catch (IllegalStateException ignored) {
+        }
+
+        // get right string
+        String rightString = null;
+        try {
+            rightString = right.getStringValue();
+        } catch (IllegalStateException ignored) {
+        }
+
+        // concatenate strings
+        if (leftString != null && rightString != null) {
+            return List.of(new LuaValue(leftString + rightString));
+        }
+        // use metamethod
+        else {
+            Function<List<LuaValue>, List<LuaValue>> function = getFunctionFromMetatable(left, right, LuaMetatable.CONCAT_VALUE);
+            // throw exception if function does not exist
+            if (function == null) {
+                LuaValue unsupportedAddValue = leftString == null ? left : right;
+                throw new LuaRuntimeException("concatenate", unsupportedAddValue);
+            }
+            // return result of function call
+            return function.apply(List.of(left, right));
+        }
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
@@ -413,10 +445,15 @@ class LuaValue {
     }
 
     public String getStringValue() {
-        if (!isStringValue()) {
+        if (isStringValue()) {
+            return stringValue;
+        } else if (isIntegerValue()) {
+            return String.valueOf(integerValue);
+        } else if (isRealValue()) {
+            return String.valueOf(realValue);
+        } else {
             throw getCantGetPrimitiveValueException(STRING);
         }
-        return stringValue;
     }
 
     public Function<List<LuaValue>, List<LuaValue>> getFunctionValue() {

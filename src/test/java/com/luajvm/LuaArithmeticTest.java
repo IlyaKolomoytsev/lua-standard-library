@@ -119,6 +119,12 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("concatArguments")
+    public <T1, T2, E> void concatTest(T1 val1, T2 val2, LuaValue.Type type, E expected) {
+        arithmeticTest(val1, val2, type, expected, LuaValue::concat);
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -164,6 +170,12 @@ public class LuaArithmeticTest {
     @MethodSource("exceptionArguments")
     public <T1, T2> void idivExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::idiv);
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatExceptionArguments")
+    public <T1, T2> void concatExceptionTest(T1 val1, T2 val2, Arg arg) {
+        arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::concat);
     }
 
     private static Stream<Arguments> addArguments() {
@@ -670,6 +682,81 @@ public class LuaArithmeticTest {
         );
     }
 
+    private static Stream<Arguments> concatArguments() {
+        return Stream.of(
+                // Integer + Integer
+                Arguments.of(0, 0, LuaValue.Type.string, "00"),
+                Arguments.of(0, 1, LuaValue.Type.string, "01"),
+                Arguments.of(1, 0, LuaValue.Type.string, "10"),
+                Arguments.of(1, 2, LuaValue.Type.string, "12"),
+                Arguments.of(Long.MAX_VALUE, Long.MAX_VALUE, LuaValue.Type.string, "92233720368547758079223372036854775807"),
+                Arguments.of(0, -1, LuaValue.Type.string, "0-1"),
+                Arguments.of(-1, 0, LuaValue.Type.string, "-10"),
+                Arguments.of(-1, -4, LuaValue.Type.string, "-1-4"),
+                Arguments.of(-10, 10, LuaValue.Type.string, "-1010"),
+                Arguments.of(Long.MAX_VALUE, Long.MIN_VALUE, LuaValue.Type.string, "9223372036854775807-9223372036854775808"),
+                // Real + Real
+                Arguments.of(0.0d, 0.0d, LuaValue.Type.string, "0.00.0"),
+                Arguments.of(0d, 1d, LuaValue.Type.string, "0.01.0"),
+                Arguments.of(1d, 0d, LuaValue.Type.string, "1.00.0"),
+                Arguments.of(1d, 2d, LuaValue.Type.string, "1.02.0"),
+                Arguments.of(Double.MAX_VALUE, Double.MAX_VALUE, LuaValue.Type.string, "1.7976931348623157E3081.7976931348623157E308"),
+                Arguments.of(0d, -1d, LuaValue.Type.string, "0.0-1.0"),
+                Arguments.of(-1d, 0d, LuaValue.Type.string, "-1.00.0"),
+                Arguments.of(-1d, -4d, LuaValue.Type.string, "-1.0-4.0"),
+                Arguments.of(-10d, 10d, LuaValue.Type.string, "-10.010.0"),
+                Arguments.of(Double.MAX_VALUE, Double.MIN_VALUE, LuaValue.Type.string, "1.7976931348623157E3084.9E-324"),
+                Arguments.of(1.25d, 2.26d, LuaValue.Type.string, "1.252.26"),
+                // Real + Integer and Integer + Real
+                Arguments.of(1, 2.26d, LuaValue.Type.string, "12.26"),
+                Arguments.of(2.26d, 1, LuaValue.Type.string, "2.261"),
+                // String(Integer) + Integer
+                Arguments.of("1", 1, LuaValue.Type.string, "11"),
+                Arguments.of(9, "2", LuaValue.Type.string, "92"),
+                Arguments.of("-1", 1, LuaValue.Type.string, "-11"),
+                Arguments.of(9, "-2", LuaValue.Type.string, "9-2"),
+                // String(Integer) + Real
+                Arguments.of("1", 1d, LuaValue.Type.string, "11.0"),
+                Arguments.of(9d, "2", LuaValue.Type.string, "9.02"),
+                Arguments.of("-1", 1d, LuaValue.Type.string, "-11.0"),
+                Arguments.of(9d, "-2", LuaValue.Type.string, "9.0-2"),
+                // String(Real) + Integer
+                Arguments.of("1.2", 1, LuaValue.Type.string, "1.21"),
+                Arguments.of(9, "2.1", LuaValue.Type.string, "92.1"),
+                Arguments.of("-1.3", 1, LuaValue.Type.string, "-1.31"),
+                Arguments.of(9, "-2.2", LuaValue.Type.string, "9-2.2"),
+                // String(Real) + Real
+                Arguments.of("1.2", 1d, LuaValue.Type.string, "1.21.0"),
+                Arguments.of(9d, "2.1", LuaValue.Type.string, "9.02.1"),
+                Arguments.of("-1.3", 1d, LuaValue.Type.string, "-1.31.0"),
+                Arguments.of(9d, "-2.2", LuaValue.Type.string, "9.0-2.2"),
+                // String + String
+                Arguments.of("9", "2", LuaValue.Type.string, "92"),
+                Arguments.of("9", "-2", LuaValue.Type.string, "9-2"),
+                Arguments.of("-9", "2", LuaValue.Type.string, "-92"),
+                Arguments.of("9.1", "2", LuaValue.Type.string, "9.12"),
+                Arguments.of("9", "2.1", LuaValue.Type.string, "92.1"),
+                Arguments.of("9.1", "2.1", LuaValue.Type.string, "9.12.1"),
+                // Table with metatable operation + Number
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5)), 1, LuaValue.Type.string, "51"),
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5)), 1d, LuaValue.Type.string, "51.0"),
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5d)), 1, LuaValue.Type.string, "5.01"),
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5d)), 1d, LuaValue.Type.string, "5.01.0"),
+                Arguments.of(1, createTableWithConcatMetatableAction(new LuaValue(5)), LuaValue.Type.string, "15"),
+                Arguments.of(1d, createTableWithConcatMetatableAction(new LuaValue(5)), LuaValue.Type.string, "1.05"),
+                Arguments.of(1, createTableWithConcatMetatableAction(new LuaValue(5d)), LuaValue.Type.string, "15.0"),
+                Arguments.of(1d, createTableWithConcatMetatableAction(new LuaValue(5d)), LuaValue.Type.string, "1.05.0"),
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5)), "1", LuaValue.Type.string, "51"),
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5)), "1.1", LuaValue.Type.string, "51.1"),
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5d)), "1", LuaValue.Type.string, "5.01"),
+                Arguments.of(createTableWithConcatMetatableAction(new LuaValue(5d)), "1.1", LuaValue.Type.string, "5.01.1"),
+                Arguments.of("1", createTableWithConcatMetatableAction(new LuaValue(5)), LuaValue.Type.string, "15"),
+                Arguments.of("1.1", createTableWithConcatMetatableAction(new LuaValue(5)), LuaValue.Type.string, "1.15"),
+                Arguments.of(1, createTableWithConcatMetatableAction(new LuaValue(5d)), LuaValue.Type.string, "15.0"),
+                Arguments.of("1.1", createTableWithConcatMetatableAction(new LuaValue(5d)), LuaValue.Type.string, "1.15.0")
+        );
+    }
+
     private static Stream<Arguments> exceptionArguments() {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -686,6 +773,32 @@ public class LuaArithmeticTest {
         for (LuaValue val1 : incorrectValues) {
             for (LuaValue val2 : incorrectValues) {
                 argList.add(Arguments.of(val1, val2, Arg.first, Arg.second));
+            }
+        }
+        return argList.stream();
+    }
+
+    private static Stream<Arguments> concatExceptionArguments() {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc"),
+                new LuaValue((list) -> List.of()),
+                new LuaValue(Map.of())
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val1 : incorrectValues) {
+            for (LuaValue val2 : incorrectValues) {
+                if (val1.isStringValue() && val2.isStringValue()) {
+                    continue;
+                }
+                if (val1.isStringValue()) {
+                    argList.add(Arguments.of(val1, val2, Arg.second, Arg.none));
+                } else {
+                    argList.add(Arguments.of(val1, val2, Arg.first, Arg.none));
+                }
             }
         }
         return argList.stream();
@@ -892,6 +1005,33 @@ public class LuaArithmeticTest {
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
                 return LuaValue.idiv(arg1, val);
+            } else {
+                return List.of(new LuaValue());
+            }
+        }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithConcatMetatableAction(LuaValue value) {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        tableContent.put(new LuaValue("value"), value);
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.CONCAT_VALUE, new LuaValue((args) -> {
+            LuaValue arg1 = args.get(0);
+            LuaValue arg2 = args.get(1);
+
+            if (arg1.getType() == LuaValue.Type.table) {
+                LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
+                return LuaValue.concat(val, arg2);
+            } else if (arg2.getType() == LuaValue.Type.table) {
+                LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
+                return LuaValue.concat(arg1, val);
             } else {
                 return List.of(new LuaValue());
             }
