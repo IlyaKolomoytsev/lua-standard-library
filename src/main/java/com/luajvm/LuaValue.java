@@ -56,13 +56,13 @@ class LuaValue {
         };
     }
 
-    private static List<LuaValue> arithmeticOperation(LuaValue left, LuaValue right, LuaValue metamethod, BiFunction<LuaValue, LuaValue, LuaValue> operationForNumbers) {
+    private static LuaValue arithmeticOperation(LuaValue left, LuaValue right, LuaValue metamethod, BiFunction<LuaValue, LuaValue, LuaValue> operationForNumbers) {
         // try to reduce values to numbers
         LuaValue leftNumber = LuaFunctions.toNumber(left).getFirst();
         LuaValue rightNumber = LuaFunctions.toNumber(right).getFirst();
         // use operation for numbers
         if (leftNumber.isNumber() && rightNumber.isNumber()) {
-            return List.of(operationForNumbers.apply(leftNumber, rightNumber));
+            return operationForNumbers.apply(leftNumber, rightNumber);
         }
         // use metatables functions
         else {
@@ -74,7 +74,7 @@ class LuaValue {
                 throw new LuaRuntimeException("perform arithmetic on", unsupportedAddValue);
             }
             // return result of function call
-            return function.apply(List.of(left, right));
+            return function.apply(List.of(left, right)).getFirst();
         }
     }
 
@@ -96,7 +96,7 @@ class LuaValue {
         return function;
     }
 
-    public static List<LuaValue> add(LuaValue left, LuaValue right) {
+    public static LuaValue add(LuaValue left, LuaValue right) {
         BiFunction<LuaValue, LuaValue, LuaValue> addNumbersFunction = (leftNumber, rightNumber) -> {
             // sum integer values
             if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
@@ -112,7 +112,7 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.ADD_VAlUE, addNumbersFunction);
     }
 
-    public static List<LuaValue> sub(LuaValue left, LuaValue right) {
+    public static LuaValue sub(LuaValue left, LuaValue right) {
         BiFunction<LuaValue, LuaValue, LuaValue> div = (leftNumber, rightNumber) -> {
             // difference integer values
             if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
@@ -128,7 +128,7 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.SUB_VAlUE, div);
     }
 
-    public static List<LuaValue> mul(LuaValue left, LuaValue right) {
+    public static LuaValue mul(LuaValue left, LuaValue right) {
         BiFunction<LuaValue, LuaValue, LuaValue> mulNumbersFunction = (leftNumber, rightNumber) -> {
             // product of integer values
             if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
@@ -144,7 +144,7 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.MUL_VAlUE, mulNumbersFunction);
     }
 
-    public static List<LuaValue> div(LuaValue left, LuaValue right) {
+    public static LuaValue div(LuaValue left, LuaValue right) {
         BiFunction<LuaValue, LuaValue, LuaValue> divNumbersFunction = (leftNumber, rightNumber) -> {
             double result = leftNumber.getRealValue() / rightNumber.getRealValue();
             return new LuaValue(result);
@@ -152,7 +152,7 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.DIV_VAlUE, divNumbersFunction);
     }
 
-    public static List<LuaValue> mod(LuaValue left, LuaValue right) {
+    public static LuaValue mod(LuaValue left, LuaValue right) {
         BiFunction<LuaValue, LuaValue, LuaValue> modNumbersFunction = (leftNumber, rightNumber) -> {
             // for integer values
             if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
@@ -168,7 +168,7 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.MOD_VAlUE, modNumbersFunction);
     }
 
-    public static List<LuaValue> pow(LuaValue left, LuaValue right) {
+    public static LuaValue pow(LuaValue left, LuaValue right) {
         BiFunction<LuaValue, LuaValue, LuaValue> powNumbersFunction = (leftNumber, rightNumber) -> {
             double result = Math.pow(leftNumber.getRealValue(), rightNumber.getRealValue());
             return new LuaValue(result);
@@ -176,38 +176,38 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.POW_VAlUE, powNumbersFunction);
     }
 
-    public static List<LuaValue> unm(LuaValue left, LuaValue right) {
+    public static LuaValue unm(LuaValue left, LuaValue right) {
         return unm(left);
     }
 
-    public static List<LuaValue> unm(LuaValue value) {
+    public static LuaValue unm(LuaValue value) {
         // Convert value to number
         LuaValue number = LuaFunctions.toNumber(value).getFirst();
 
         // string number case
         if (value.type == Type.string && number.isNumber()) {
-            return List.of(new LuaValue(-number.getRealValue()));
+            return new LuaValue(-number.getRealValue());
         }
         // integer case
         if (number.isIntegerValue()) {
-            return List.of(new LuaValue(-number.getIntegerValue()));
+            return new LuaValue(-number.getIntegerValue());
         }
         // real case
         else if (number.isRealValue()) {
-            return List.of(new LuaValue(-number.getRealValue()));
+            return new LuaValue(-number.getRealValue());
         }
         // metatable case
         else {
             LuaValue metatable = value.getMetatable();
             if (metatable.isTableValue() && metatable.getTableValue().containsKey(LuaMetatable.UNM_VAlUE)) {
-                return metatable.getTableValue().get(LuaMetatable.UNM_VAlUE).getFunctionValue().apply(List.of(value));
+                return metatable.getTableValue().get(LuaMetatable.UNM_VAlUE).getFunctionValue().apply(List.of(value)).getFirst();
             }
         }
         // exception
         throw new LuaRuntimeException("perform arithmetic on", number);
     }
 
-    public static List<LuaValue> idiv(LuaValue left, LuaValue right) {
+    public static LuaValue idiv(LuaValue left, LuaValue right) {
         BiFunction<LuaValue, LuaValue, LuaValue> powNumbersFunction = (leftNumber, rightNumber) -> {
             if (leftNumber.isIntegerValue() && rightNumber.isIntegerValue()) {
                 return new LuaValue(leftNumber.getIntegerValue() / rightNumber.getIntegerValue());
@@ -218,7 +218,7 @@ class LuaValue {
         return arithmeticOperation(left, right, LuaMetatable.IDIV_VAlUE, powNumbersFunction);
     }
 
-    public static List<LuaValue> concat(LuaValue left, LuaValue right) {
+    public static LuaValue concat(LuaValue left, LuaValue right) {
         // get left string
         String leftString = null;
         try {
@@ -235,7 +235,7 @@ class LuaValue {
 
         // concatenate strings
         if (leftString != null && rightString != null) {
-            return List.of(new LuaValue(leftString + rightString));
+            return new LuaValue(leftString + rightString);
         }
         // use metamethod
         else {
@@ -246,7 +246,7 @@ class LuaValue {
                 throw new LuaRuntimeException("concatenate", unsupportedAddValue);
             }
             // return result of function call
-            return function.apply(List.of(left, right));
+            return function.apply(List.of(left, right)).getFirst();
         }
     }
 

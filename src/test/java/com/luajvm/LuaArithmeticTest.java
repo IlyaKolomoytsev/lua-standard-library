@@ -15,10 +15,10 @@ import static java.lang.Math.round;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LuaArithmeticTest {
-    public <T1, T2, E> void arithmeticTest(T1 val1, T2 val2, LuaValue.Type type, E expected, BiFunction<LuaValue, LuaValue, List<LuaValue>> action) {
+    public <T1, T2, E> void arithmeticTest(T1 val1, T2 val2, LuaValue.Type type, E expected, BiFunction<LuaValue, LuaValue, LuaValue> action) {
         LuaValue arg1 = LuaValue.create(val1);
         LuaValue arg2 = LuaValue.create(val2);
-        LuaValue sum = action.apply(arg1, arg2).getFirst();
+        LuaValue sum = action.apply(arg1, arg2);
         assertEquals(type, sum.getType());
         switch (type) {
             case bool -> {
@@ -48,7 +48,7 @@ public class LuaArithmeticTest {
         second,
     }
 
-    static <T1, T2> void arithmeticExceptionTest(T1 val1, T2 val2, Arg exceptionArg1, Arg exceptionArg2, BiFunction<LuaValue, LuaValue, List<LuaValue>> action) {
+    static <T1, T2> void arithmeticExceptionTest(T1 val1, T2 val2, Arg exceptionArg1, Arg exceptionArg2, BiFunction<LuaValue, LuaValue, LuaValue> action) {
         LuaValue arg1 = LuaValue.create(val1);
         LuaValue arg2 = LuaValue.create(val2);
         LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> action.apply(arg1, arg2));
@@ -816,10 +816,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.add(val, arg2);
+                return List.of(LuaValue.add(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.add(val, arg1);
+                return List.of(LuaValue.add(val, arg1));
             } else {
                 return List.of(new LuaValue());
             }
@@ -843,10 +843,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.sub(val, arg2);
+                return List.of(LuaValue.sub(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.sub(arg1, val);
+                return List.of(LuaValue.sub(arg1, val));
             } else {
                 return List.of(new LuaValue());
             }
@@ -870,10 +870,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.mul(val, arg2);
+                return List.of(LuaValue.mul(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.mul(arg1, val);
+                return List.of(LuaValue.mul(arg1, val));
             } else {
                 return List.of(new LuaValue());
             }
@@ -897,10 +897,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.div(val, arg2);
+                return List.of(LuaValue.div(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.div(arg1, val);
+                return List.of(LuaValue.div(arg1, val));
             } else {
                 return List.of(new LuaValue());
             }
@@ -924,10 +924,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.mod(val, arg2);
+                return List.of(LuaValue.mod(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.mod(arg1, val);
+                return List.of(LuaValue.mod(arg1, val));
             } else {
                 return List.of(new LuaValue());
             }
@@ -951,10 +951,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.pow(val, arg2);
+                return List.of(LuaValue.pow(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.pow(arg1, val);
+                return List.of(LuaValue.pow(arg1, val));
             } else {
                 return List.of(new LuaValue());
             }
@@ -977,7 +977,7 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.unm(val);
+                return List.of(LuaValue.unm(val));
             } else {
                 return List.of(new LuaValue());
             }
@@ -1001,10 +1001,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.idiv(val, arg2);
+                return List.of(LuaValue.idiv(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.idiv(arg1, val);
+                return List.of(LuaValue.idiv(arg1, val));
             } else {
                 return List.of(new LuaValue());
             }
@@ -1028,10 +1028,10 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return LuaValue.concat(val, arg2);
+                return List.of(LuaValue.concat(val, arg2));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return LuaValue.concat(arg1, val);
+                return List.of(LuaValue.concat(arg1, val));
             } else {
                 return List.of(new LuaValue());
             }
