@@ -67,27 +67,33 @@ class LuaValue {
         // use metatables functions
         else {
             // get function from metatables
-            LuaValue leftMetatable = left.getMetatable();
-            LuaValue rightMetatable = right.getMetatable();
-            Function<List<LuaValue>, List<LuaValue>> function = null;
-            boolean addExistInLeft = leftMetatable.isTableValue() && leftMetatable.getTableValue().containsKey(metamethod);
-            boolean addExistInRight = rightMetatable.isTableValue() && rightMetatable.getTableValue().containsKey(metamethod);
-            // use function from left metatable
-            if (addExistInLeft) {
-                function = leftMetatable.getTableValue().get(metamethod).getFunctionValue();
-            }
-            // use function from right metatable
-            else if (addExistInRight) {
-                function = rightMetatable.getTableValue().get(metamethod).getFunctionValue();
-            }
-            // throw exception if function is not found
-            else {
+            Function<List<LuaValue>, List<LuaValue>> function = getFunctionFromMetatable(left, right, metamethod);
+            // throw exception if function does not exist
+            if (function == null) {
                 LuaValue unsupportedAddValue = leftNumber.isNumber() ? right : left;
                 throw new LuaRuntimeException("perform arithmetic on", unsupportedAddValue);
             }
             // return result of function call
             return function.apply(List.of(left, right));
         }
+    }
+
+    private static Function<List<LuaValue>, List<LuaValue>> getFunctionFromMetatable(LuaValue left, LuaValue right, LuaValue metamethod) {
+        // get function from metatables
+        LuaValue leftMetatable = left.getMetatable();
+        LuaValue rightMetatable = right.getMetatable();
+        Function<List<LuaValue>, List<LuaValue>> function = null;
+        boolean addExistInLeft = leftMetatable.isTableValue() && leftMetatable.getTableValue().containsKey(metamethod);
+        boolean addExistInRight = rightMetatable.isTableValue() && rightMetatable.getTableValue().containsKey(metamethod);
+        // use function from left metatable
+        if (addExistInLeft) {
+            function = leftMetatable.getTableValue().get(metamethod).getFunctionValue();
+        }
+        // use function from right metatable
+        else if (addExistInRight) {
+            function = rightMetatable.getTableValue().get(metamethod).getFunctionValue();
+        }
+        return function;
     }
 
     public static List<LuaValue> add(LuaValue left, LuaValue right) {
