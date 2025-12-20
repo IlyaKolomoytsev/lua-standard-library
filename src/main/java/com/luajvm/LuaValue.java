@@ -250,6 +250,33 @@ class LuaValue {
         }
     }
 
+    public static LuaValue len(LuaValue left, LuaValue right) {
+        return len(left);
+    }
+
+    public static LuaValue len(LuaValue value) {
+        switch (value.getType()) {
+            case string -> {
+                return new LuaValue(value.getStringValue().length());
+            }
+            case table -> {
+                LuaValue metatableValue = value.getMetatable();
+                // try return metamethod result
+                if (metatableValue.isTableValue()) {
+                    Map<LuaValue, LuaValue> metatable = metatableValue.getTableValue();
+                    LuaValue metamethod = metatable.get(LuaMetatable.LEN_VAlUE);
+                    if (metamethod != null && metamethod.isFunctionValue()) {
+                        return metamethod.getFunctionValue().apply(List.of(value)).getFirst();
+                    }
+                }
+                // return table size
+                return new LuaValue(value.getTableValue().size());
+
+            }
+            default -> throw new LuaRuntimeException("get length of", value);
+        }
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();

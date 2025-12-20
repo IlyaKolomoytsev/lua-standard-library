@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.lang.Math.round;
@@ -125,6 +126,12 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("lenArguments")
+    public <T1, T2, E> void lenTest(T1 val1, T2 val2, LuaValue.Type type, E expected) {
+        arithmeticTest(val1, val2, type, expected, LuaValue::len);
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -177,6 +184,13 @@ public class LuaArithmeticTest {
     public <T1, T2> void concatExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::concat);
     }
+
+    @ParameterizedTest
+    @MethodSource("lenExceptionArguments")
+    public <T1, T2> void lenExceptionTest(T1 val1, T2 val2, Arg arg) {
+        arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::len);
+    }
+
 
     private static Stream<Arguments> addArguments() {
         return Stream.of(
@@ -757,6 +771,29 @@ public class LuaArithmeticTest {
         );
     }
 
+    private static Stream<Arguments> lenArguments() {
+        Function<Integer, LuaValue> getLuaTable = (count) -> {
+            HashMap<LuaValue, LuaValue> table = new HashMap<>();
+            for (int i = 1; i < count + 1; i ++) {
+                table.put(new LuaValue(i), new LuaValue());
+            }
+            return new LuaValue(table);
+        };
+        LuaValue t = getLuaTable.apply(0);
+        return Stream.of(
+                // Table
+                Arguments.of(getLuaTable.apply(0), null, LuaValue.Type.integer, 0),
+                Arguments.of(getLuaTable.apply(1), null, LuaValue.Type.integer, 1),
+                Arguments.of(getLuaTable.apply(1000), null, LuaValue.Type.integer, 1000),
+                // String
+                Arguments.of("", null, LuaValue.Type.integer, 0),
+                Arguments.of("*", null, LuaValue.Type.integer, 1),
+                Arguments.of("*".repeat(1000), null, LuaValue.Type.integer, 1000),
+                // Table with metatable operation
+                Arguments.of(createTableWithLenMetatableAction(new LuaValue(5)), null, LuaValue.Type.integer, 5)
+        );
+    }
+
     private static Stream<Arguments> exceptionArguments() {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -802,6 +839,17 @@ public class LuaArithmeticTest {
             }
         }
         return argList.stream();
+    }
+
+    private static Stream<Arguments> lenExceptionArguments() {
+        return Stream.of(
+                Arguments.of(null, null, Arg.first),
+                Arguments.of(1, null, Arg.first),
+                Arguments.of(1d, null, Arg.first),
+                Arguments.of(true, null, Arg.first),
+                Arguments.of(false, null, Arg.first),
+                Arguments.of(new LuaValue((list) -> List.of()), null, Arg.first)
+        );
     }
 
     private static LuaValue createTableWithAddMetatableAction(LuaValue value) {
@@ -1032,6 +1080,29 @@ public class LuaArithmeticTest {
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
                 return List.of(LuaValue.concat(arg1, val));
+            } else {
+                return List.of(new LuaValue());
+            }
+        }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithLenMetatableAction(LuaValue value) {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        tableContent.put(new LuaValue("length"), value);
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.LEN_VAlUE, new LuaValue((args) -> {
+            LuaValue arg1 = args.getFirst();
+
+            if (arg1.getType() == LuaValue.Type.table) {
+                LuaValue length = arg1.getTableValue().get(new LuaValue("length"));
+                return List.of(length);
             } else {
                 return List.of(new LuaValue());
             }
