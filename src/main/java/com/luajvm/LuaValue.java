@@ -287,6 +287,10 @@ class LuaValue {
         }
     }
 
+    public static LuaValue eq(LuaValue left, LuaValue right) {
+        return new LuaValue(left.equals(right));
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();

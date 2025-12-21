@@ -132,6 +132,12 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("eqArguments")
+    public <T1, T2, E> void eqTest(T1 val1, T2 val2, LuaValue.Type type, E expected) {
+        arithmeticTest(val1, val2, type, expected, LuaValue::eq);
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -774,7 +780,7 @@ public class LuaArithmeticTest {
     private static Stream<Arguments> lenArguments() {
         Function<Integer, LuaValue> getLuaTable = (count) -> {
             HashMap<LuaValue, LuaValue> table = new HashMap<>();
-            for (int i = 1; i < count + 1; i ++) {
+            for (int i = 1; i < count + 1; i++) {
                 table.put(new LuaValue(i), new LuaValue());
             }
             return new LuaValue(table);
@@ -792,6 +798,81 @@ public class LuaArithmeticTest {
                 // Table with metatable operation
                 Arguments.of(createTableWithLenMetatableAction(new LuaValue(5)), null, LuaValue.Type.integer, 5)
         );
+    }
+
+    private static Stream<Arguments> eqArguments() {
+        Function<List<LuaValue>, List<LuaValue>> func1 = (args) -> List.of();
+        Function<List<LuaValue>, List<LuaValue>> func2 = (args) -> List.of();
+        Map<LuaValue, LuaValue> table1 = Map.of();
+        Map<LuaValue, LuaValue> table2 = Map.of(new LuaValue(), new LuaValue());
+
+        ArrayList<Arguments> args = new ArrayList<>(List.of(
+                // Nil == Nil
+                Arguments.of(null, null, LuaValue.Type.bool, true),
+                // Bool == Bool
+                Arguments.of(true, true, LuaValue.Type.bool, true),
+                Arguments.of(false, false, LuaValue.Type.bool, true),
+                Arguments.of(true, false, LuaValue.Type.bool, false),
+                Arguments.of(true, false, LuaValue.Type.bool, false),
+                // Integer == Integer
+                Arguments.of(0, 0, LuaValue.Type.bool, true),
+                Arguments.of(0, 1, LuaValue.Type.bool, false),
+                // Real == Real
+                Arguments.of(0.0d, 0.0d, LuaValue.Type.bool, true),
+                Arguments.of(0d, 1d, LuaValue.Type.bool, false),
+                // Real == Integer and Integer == Real
+                Arguments.of(1, 1d, LuaValue.Type.bool, true),
+                Arguments.of(1d, 1, LuaValue.Type.bool, true),
+                Arguments.of(1, 2.26d, LuaValue.Type.bool, false),
+                Arguments.of(2.26d, 1, LuaValue.Type.bool, false),
+                // String(Integer) == Integer
+                Arguments.of("1", 1, LuaValue.Type.bool, false),
+                // String(Integer) + Real
+                Arguments.of("1", 1d, LuaValue.Type.bool, false),
+                // String(Real) + Integer
+                Arguments.of("1.0", 1, LuaValue.Type.bool, false),
+                // String(Real) + Real
+                Arguments.of("1.0", 1d, LuaValue.Type.bool, false),
+                // String + String
+                Arguments.of("1", "1", LuaValue.Type.bool, true),
+                Arguments.of("abc", "abc", LuaValue.Type.bool, true),
+                Arguments.of("1", "abc", LuaValue.Type.bool, false),
+                // Function == Function
+                Arguments.of(func1, func1, LuaValue.Type.bool, true),
+                Arguments.of(func2, func1, LuaValue.Type.bool, false),
+                // Table == Table
+                Arguments.of(table1, table1, LuaValue.Type.bool, true),
+                Arguments.of(table2, table1, LuaValue.Type.bool, false),
+                // Table with metatable operation + Number
+                Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, true),
+                Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), createTableWithEqMetatableAction(new LuaValue(-5)), LuaValue.Type.bool, false),
+                Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), new LuaValue(Map.of(new LuaValue("value"), new LuaValue(5))), LuaValue.Type.bool, true),
+                Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), new LuaValue(Map.of(new LuaValue("value"), new LuaValue(-5))), LuaValue.Type.bool, false),
+                Arguments.of( new LuaValue(Map.of(new LuaValue("value"), new LuaValue(5))), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, true),
+                Arguments.of(new LuaValue(Map.of(new LuaValue("value"), new LuaValue(-5))), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, false),
+                Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), new LuaValue(-5), LuaValue.Type.bool, false),
+                Arguments.of( new LuaValue(5), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, false)
+        ));
+
+        List<LuaValue> differentValues = List.of(
+                new LuaValue(),
+                new LuaValue(true),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue("abc"),
+                new LuaValue((list) -> List.of()),
+                new LuaValue(Map.of())
+        );
+
+        for (LuaValue val1 : differentValues) {
+            for (LuaValue val2 : differentValues) {
+                if (val1.getType() != val2.getType()) {
+                    args.add(Arguments.of(val1, val2, LuaValue.Type.bool, false));
+                }
+            }
+        }
+
+        return args.stream();
     }
 
     private static Stream<Arguments> exceptionArguments() {
@@ -1105,6 +1186,31 @@ public class LuaArithmeticTest {
                 return List.of(length);
             } else {
                 return List.of(new LuaValue());
+            }
+        }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithEqMetatableAction(LuaValue value) {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        tableContent.put(new LuaValue("value"), value);
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.EQ_VAlUE, new LuaValue((args) -> {
+            LuaValue arg1 = args.get(0);
+            LuaValue arg2 = args.get(1);
+
+            if (arg1.getType() == LuaValue.Type.table && arg2.getType() == LuaValue.Type.table) {
+                LuaValue val1 = arg1.getTableValue().get(new LuaValue("value"));
+                LuaValue val2 = arg2.getTableValue().get(new LuaValue("value"));
+                return List.of(LuaValue.eq(val1, val2));
+            } else {
+                return List.of(new LuaValue(false));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
