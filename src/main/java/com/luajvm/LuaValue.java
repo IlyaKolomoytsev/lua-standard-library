@@ -33,14 +33,24 @@ class LuaValue {
         if (value.type != type) {
             return false;
         } else {
-            return switch (type) {
-                case nil -> true;
-                case bool -> value.getBoolValue() == this.getBoolValue();
-                case integer, real -> value.getRealValue() == this.getRealValue();
-                case string -> value.getStringValue().equals(this.getStringValue());
-                case function -> value.getFunctionValue() == this.getFunctionValue(); // compare pointers
-                case table -> value.getTableValue() == this.getTableValue(); // compare pointers
-            };
+            boolean result = false;
+            switch (type) {
+                case nil -> result = true;
+                case bool -> result = value.getBoolValue() == this.getBoolValue();
+                case integer, real -> result = value.getRealValue() == this.getRealValue();
+                case string -> result = value.getStringValue().equals(this.getStringValue());
+                case function -> result = value.getFunctionValue() == this.getFunctionValue(); // compare pointers
+                case table -> {
+                    Function<List<LuaValue>, List<LuaValue>> metamethod = getFunctionFromMetatable(this, value, LuaMetatable.EQ_VAlUE);
+                    if (metamethod == null) {
+                        result = value.getTableValue() == this.getTableValue(); // compare pointers
+                    } else {
+                        LuaValue metamethodResult = metamethod.apply(List.of(this, value)).getFirst();
+                        result = metamethodResult.getBoolValue(true);
+                    }
+                }
+            }
+            return result;
         }
     }
 
