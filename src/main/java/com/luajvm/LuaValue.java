@@ -30,7 +30,7 @@ class LuaValue {
             return false;
         }
         LuaValue value = (LuaValue) obj;
-        if (value.type != type) {
+        if (value.type != type && !(this.isNumber() && value.isNumber())) {
             return false;
         } else {
             boolean result = false;
