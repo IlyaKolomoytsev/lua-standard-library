@@ -446,6 +446,18 @@ class LuaValue {
         };
     }
 
+    public boolean getBoolValue(boolean save) {
+        if (save) {
+            return switch (type) {
+                case nil -> false;
+                case bool -> boolValue;
+                default -> true;
+            };
+        } else {
+            return getBoolValue();
+        }
+    }
+
     public boolean getBoolValue() {
         if (!isBoolValue()) {
             throw getCantGetPrimitiveValueException(BOOL);
