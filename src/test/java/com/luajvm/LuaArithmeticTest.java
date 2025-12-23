@@ -848,10 +848,10 @@ public class LuaArithmeticTest {
                 Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), createTableWithEqMetatableAction(new LuaValue(-5)), LuaValue.Type.bool, false),
                 Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), new LuaValue(Map.of(new LuaValue("value"), new LuaValue(5))), LuaValue.Type.bool, true),
                 Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), new LuaValue(Map.of(new LuaValue("value"), new LuaValue(-5))), LuaValue.Type.bool, false),
-                Arguments.of( new LuaValue(Map.of(new LuaValue("value"), new LuaValue(5))), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, true),
+                Arguments.of(new LuaValue(Map.of(new LuaValue("value"), new LuaValue(5))), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, true),
                 Arguments.of(new LuaValue(Map.of(new LuaValue("value"), new LuaValue(-5))), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, false),
                 Arguments.of(createTableWithEqMetatableAction(new LuaValue(5)), new LuaValue(-5), LuaValue.Type.bool, false),
-                Arguments.of( new LuaValue(5), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, false)
+                Arguments.of(new LuaValue(5), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, false)
         ));
 
         List<LuaValue> differentValues = List.of(
