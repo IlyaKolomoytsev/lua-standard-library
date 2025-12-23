@@ -324,6 +324,31 @@ class LuaValue {
         throw new LuaRuntimeException("compare", left, right);
     }
 
+    public LuaValue index(LuaValue indexValue) {
+        if (isTableValue()) {
+            if (tableValue.containsKey(indexValue)) {
+                return tableValue.get(indexValue);
+            } else {
+                if (metatable.tableValue.containsKey(LuaMetatable.INDEX_VALUE)) {
+                    LuaValue indexMetamethod = metatable.tableValue.get(LuaMetatable.INDEX_VALUE);
+                    switch (indexMetamethod.type) {
+                        case table -> {
+                            return indexMetamethod.index(indexValue);
+                        }
+                        case function -> {
+                            return indexMetamethod.functionValue.apply(List.of(this, indexValue)).getFirst();
+                        }
+                        default -> throw new LuaRuntimeException("index", indexMetamethod);
+                    }
+                } else {
+                    return new LuaValue();
+                }
+            }
+        } else {
+            throw new LuaRuntimeException("index", this);
+        }
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();

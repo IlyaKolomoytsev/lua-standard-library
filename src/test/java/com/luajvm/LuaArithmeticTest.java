@@ -150,6 +150,12 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("indexArguments")
+    public <T1, T2, E> void indexTest(T1 val1, T2 val2, LuaValue.Type type, E expected) {
+        arithmeticTest(val1, val2, type, expected, LuaValue::index);
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -219,6 +225,12 @@ public class LuaArithmeticTest {
     @MethodSource("compareExceptionArguments")
     public <T1, T2> void leExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::le);
+    }
+
+    @ParameterizedTest
+    @MethodSource("indexExceptionArguments")
+    public <T1, T2> void indexExceptionTest(T1 val1, T2 val2, Arg arg) {
+        arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::index);
     }
 
     private static Stream<Arguments> addArguments() {
@@ -969,6 +981,14 @@ public class LuaArithmeticTest {
         );
     }
 
+    private static Stream<Arguments> indexArguments() {
+        return Stream.of(
+                Arguments.of(Map.of(new LuaValue("value"), new LuaValue(3)), "value", LuaValue.Type.integer, 3),
+                Arguments.of(createTableWithIndexMetatableTable(), "value", LuaValue.Type.string, "value"),
+                Arguments.of(createTableWithIndexMetatableFunction(), "value", LuaValue.Type.string, "value")
+        );
+    }
+
     private static Stream<Arguments> exceptionArguments() {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -1044,6 +1064,25 @@ public class LuaArithmeticTest {
                 argList.add(Arguments.of(val1, val2, Arg.first, Arg.second));
             }
         }
+        return argList.stream();
+    }
+
+    private static Stream<Arguments> indexExceptionArguments() {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc"),
+                new LuaValue((list) -> List.of())
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val : incorrectValues) {
+            argList.add(Arguments.of(val, "v", Arg.first, Arg.none));
+        }
+
         return argList.stream();
     }
 
@@ -1377,6 +1416,38 @@ public class LuaArithmeticTest {
                 return List.of(new LuaValue(false));
             }
         }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithIndexMetatableFunction() {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.INDEX_VALUE, new LuaValue((args) -> {
+            LuaValue arg = args.get(1);
+
+            return List.of(arg);
+        }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithIndexMetatableTable() {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.INDEX_VALUE, new LuaValue(Map.of(
+                new LuaValue("value"), new LuaValue("value")
+        )));
         LuaValue metatable = new LuaValue(metatableContent);
 
         table.setMetatable(metatable);
