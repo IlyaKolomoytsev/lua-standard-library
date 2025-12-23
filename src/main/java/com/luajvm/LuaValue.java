@@ -291,6 +291,19 @@ class LuaValue {
         return new LuaValue(left.equals(right));
     }
 
+    public static LuaValue lt(LuaValue left, LuaValue right) {
+        if (left.isTableValue() && right.isTableValue()) {
+            Function<List<LuaValue>, List<LuaValue>> metamethod = getFunctionFromMetatable(left, right, LuaMetatable.LT_VAlUE);
+            if (metamethod != null)
+                return new LuaValue(metamethod.apply(List.of(left, right)).getFirst().getBoolValue(true));
+        } else if (left.isNumber() && right.isNumber()) {
+            return new LuaValue(left.getRealValue() < right.getRealValue());
+        } else if (left.isStringValue() && right.isStringValue()) {
+            return new LuaValue(left.getStringValue().compareTo(right.getStringValue()) < 0);
+        }
+        throw new LuaRuntimeException("compare", left, right);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
