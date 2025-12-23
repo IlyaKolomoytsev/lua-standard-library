@@ -304,6 +304,26 @@ class LuaValue {
         throw new LuaRuntimeException("compare", left, right);
     }
 
+    public static LuaValue le(LuaValue left, LuaValue right) {
+        if (left.isTableValue() && right.isTableValue()) {
+            // use le metamethod
+            Function<List<LuaValue>, List<LuaValue>> leMetamethod = getFunctionFromMetatable(left, right, LuaMetatable.LE_VAlUE);
+            if (leMetamethod != null)
+                return new LuaValue(leMetamethod.apply(List.of(left, right)).getFirst().getBoolValue(true));
+
+            // use lt metamethod
+            Function<List<LuaValue>, List<LuaValue>> ltMetamethod = getFunctionFromMetatable(left, right, LuaMetatable.LT_VAlUE);
+            if (ltMetamethod != null) {
+                return new LuaValue(!ltMetamethod.apply(List.of(right, left)).getFirst().getBoolValue(true));
+            }
+        } else if (left.isNumber() && right.isNumber()) {
+            return new LuaValue(left.getRealValue() <= right.getRealValue());
+        } else if (left.isStringValue() && right.isStringValue()) {
+            return new LuaValue(left.getStringValue().compareTo(right.getStringValue()) <= 0);
+        }
+        throw new LuaRuntimeException("compare", left, right);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();
