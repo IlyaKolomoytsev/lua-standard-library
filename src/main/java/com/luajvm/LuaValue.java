@@ -388,6 +388,22 @@ class LuaValue {
         }
     }
 
+    public List<LuaValue> call(List<LuaValue> list) {
+        if (type == Type.function) {
+            return functionValue.apply(list);
+        } else if (Objects.requireNonNull(type) == Type.table) {
+            if (metatable != null && metatable.isTableValue() && metatable.getTableValue().containsKey(LuaMetatable.CALL_VAlUE)) {
+                LuaValue metamethodValue = metatable.getTableValue().get(LuaMetatable.CALL_VAlUE);
+                if (metamethodValue.isFunctionValue()) {
+                    return metamethodValue.getFunctionValue().apply(list);
+                } else {
+                    throw new LuaRuntimeException("call", metamethodValue);
+                }
+            }
+        }
+        throw new LuaRuntimeException("call", this);
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();

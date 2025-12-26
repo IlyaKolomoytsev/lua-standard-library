@@ -174,6 +174,17 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("callArguments")
+    public <T> void callTest(T valueArg, List<LuaValue> args, List<LuaValue> expectedResults) {
+        LuaValue value = LuaValue.create(valueArg);
+        List<LuaValue> actualResults = value.call(args);
+        assertEquals(expectedResults.size(), actualResults.size());
+        for (int i = 0; i < expectedResults.size(); i++) {
+            assertEquals(expectedResults.get(i), actualResults.get(i));
+        }
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -262,6 +273,14 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("callExceptionArguments")
+    public <T> void callExceptionTest(T function, List<LuaValue> arguments) {
+        LuaValue functionVal = LuaValue.create(function);
+        LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> functionVal.call(arguments));
+        assertEquals(exception.getArg1(), functionVal);
+    }
+
+    @ParameterizedTest
     @MethodSource("addIncorrectMetamethodArguments")
     public <T1, T2> void addIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
         incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::add);
@@ -346,6 +365,14 @@ public class LuaArithmeticTest {
         LuaValue key = LuaValue.create(keyArg);
         LuaValue value = LuaValue.create(valueArg);
         LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> table.newIndex(key, value));
+        assertEquals(metamethod, exception.getArg1());
+    }
+
+    @ParameterizedTest
+    @MethodSource("callIncorrectMetamethodArguments")
+    public <T> void callIncorrectMetamethodExceptionTest(T value, List<LuaValue> arguments, LuaValue metamethod) {
+        LuaValue tableVal = LuaValue.create(value);
+        LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> tableVal.call(arguments));
         assertEquals(metamethod, exception.getArg1());
     }
 
@@ -1114,6 +1141,14 @@ public class LuaArithmeticTest {
         );
     }
 
+    private static Stream<Arguments> callArguments() {
+        return Stream.of(
+                Arguments.of(new LuaValue((args) -> List.of()), List.of(), List.of()),
+                Arguments.of(new LuaValue((args) -> List.of(new LuaValue(1))), List.of(), List.of(new LuaValue(1))),
+                Arguments.of(createTableWithCallMetatableAction(new LuaValue(1)), List.of(new LuaValue(2), new LuaValue(3)), List.of(new LuaValue(6)))
+        );
+    }
+
     private static Stream<Arguments> exceptionArguments() {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -1230,6 +1265,24 @@ public class LuaArithmeticTest {
         return argList.stream();
     }
 
+    private static Stream<Arguments> callExceptionArguments() {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc")
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val : incorrectValues) {
+            argList.add(Arguments.of(val, List.of()));
+        }
+
+        return argList.stream();
+    }
+
     private static Stream<Arguments> arithmeticIncorrectMetamethodArguments(LuaValue metamethodKey) {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -1337,6 +1390,28 @@ public class LuaArithmeticTest {
         for (LuaValue val : incorrectValues) {
             argList.add(Arguments.of(
                     creteTableWithMetamethod(LuaMetatable.NEW_INDEX_VALUE, val), 1, 2,
+                    val
+            ));
+        }
+
+        return argList.stream();
+    }
+
+    private static Stream<Arguments> callIncorrectMetamethodArguments() {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc"),
+                new LuaValue(Map.of())
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val : incorrectValues) {
+            argList.add(Arguments.of(
+                    creteTableWithMetamethod(LuaMetatable.CALL_VAlUE, val), List.of(),
                     val
             ));
         }
@@ -1741,6 +1816,26 @@ public class LuaArithmeticTest {
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
         metatableContent.put(LuaMetatable.INDEX_VALUE, parent);
         metatableContent.put(LuaMetatable.NEW_INDEX_VALUE, parent);
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithCallMetatableAction(LuaValue value) {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        tableContent.put(new LuaValue("value"), value);
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.CALL_VAlUE, new LuaValue((args) -> {
+            LuaValue sum = new LuaValue(0);
+            for (LuaValue arg : args) {
+                sum = LuaValue.add(sum, arg);
+            }
+            return List.of(LuaValue.add(sum, value));
+        }));
         LuaValue metatable = new LuaValue(metatableContent);
 
         table.setMetatable(metatable);
