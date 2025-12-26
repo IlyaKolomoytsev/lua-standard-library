@@ -88,22 +88,34 @@ class LuaValue {
         }
     }
 
-    private static Function<List<LuaValue>, List<LuaValue>> getFunctionFromMetatable(LuaValue left, LuaValue right, LuaValue metamethod) {
+    private static Function<List<LuaValue>, List<LuaValue>> getFunctionFromMetatable(LuaValue left, LuaValue right, LuaValue metamethodKey) {
         // get function from metatables
         LuaValue leftMetatable = left.getMetatable();
         LuaValue rightMetatable = right.getMetatable();
-        Function<List<LuaValue>, List<LuaValue>> function = null;
-        boolean addExistInLeft = leftMetatable.isTableValue() && leftMetatable.getTableValue().containsKey(metamethod);
-        boolean addExistInRight = rightMetatable.isTableValue() && rightMetatable.getTableValue().containsKey(metamethod);
+        LuaValue metamethod;
+        boolean addExistInLeft = leftMetatable.isTableValue() && leftMetatable.getTableValue().containsKey(metamethodKey);
+        boolean addExistInRight = rightMetatable.isTableValue() && rightMetatable.getTableValue().containsKey(metamethodKey);
         // use function from left metatable
         if (addExistInLeft) {
-            function = leftMetatable.getTableValue().get(metamethod).getFunctionValue();
+            metamethod = leftMetatable.getTableValue().get(metamethodKey);
         }
         // use function from right metatable
         else if (addExistInRight) {
-            function = rightMetatable.getTableValue().get(metamethod).getFunctionValue();
+            metamethod = rightMetatable.getTableValue().get(metamethodKey);
         }
-        return function;
+        // return null if metamethod not found
+        else {
+            return null;
+        }
+
+        // return function if metamethod is function value
+        if (metamethod.isFunctionValue()) {
+            return metamethod.getFunctionValue();
+        }
+        // otherwise throw exception
+        else {
+            throw new LuaRuntimeException("call", metamethod);
+        }
     }
 
     public static LuaValue add(LuaValue left, LuaValue right) {
@@ -191,30 +203,35 @@ class LuaValue {
     }
 
     public static LuaValue unm(LuaValue value) {
-        // Convert value to number
-        LuaValue number = LuaFunctions.toNumber(value).getFirst();
-
-        // string number case
-        if (value.type == Type.string && number.isNumber()) {
-            return new LuaValue(-number.getRealValue());
-        }
-        // integer case
-        if (number.isIntegerValue()) {
-            return new LuaValue(-number.getIntegerValue());
-        }
-        // real case
-        else if (number.isRealValue()) {
-            return new LuaValue(-number.getRealValue());
-        }
-        // metatable case
-        else {
+        if (value.isTableValue()) {
             LuaValue metatable = value.getMetatable();
-            if (metatable.isTableValue() && metatable.getTableValue().containsKey(LuaMetatable.UNM_VAlUE)) {
-                return metatable.getTableValue().get(LuaMetatable.UNM_VAlUE).getFunctionValue().apply(List.of(value)).getFirst();
+            if (metatable != null && metatable.isTableValue() && metatable.getTableValue().containsKey(LuaMetatable.UNM_VAlUE)) {
+                LuaValue metamethodValue = metatable.getTableValue().get(LuaMetatable.UNM_VAlUE);
+                if (metamethodValue.isFunctionValue()) {
+                    return metamethodValue.getFunctionValue().apply(List.of(value)).getFirst();
+                } else {
+                    throw new LuaRuntimeException("call", metamethodValue);
+                }
+            }
+        } else {
+            // Convert value to number
+            LuaValue number = LuaFunctions.toNumber(value).getFirst();
+
+            // string number case
+            if (value.type == Type.string && number.isNumber()) {
+                return new LuaValue(-number.getRealValue());
+            }
+            // integer case
+            if (number.isIntegerValue()) {
+                return new LuaValue(-number.getIntegerValue());
+            }
+            // real case
+            else if (number.isRealValue()) {
+                return new LuaValue(-number.getRealValue());
             }
         }
         // exception
-        throw new LuaRuntimeException("perform arithmetic on", number);
+        throw new LuaRuntimeException("perform arithmetic on", value);
     }
 
     public static LuaValue idiv(LuaValue left, LuaValue right) {
@@ -270,14 +287,16 @@ class LuaValue {
                 return new LuaValue(value.getStringValue().length());
             }
             case table -> {
-                LuaValue metatableValue = value.getMetatable();
+                LuaValue metatable = value.getMetatable();
                 // try return metamethod result
-                if (metatableValue.isTableValue()) {
-                    Map<LuaValue, LuaValue> metatable = metatableValue.getTableValue();
-                    LuaValue metamethod = metatable.get(LuaMetatable.LEN_VAlUE);
-                    if (metamethod != null && metamethod.isFunctionValue()) {
-                        return metamethod.getFunctionValue().apply(List.of(value)).getFirst();
+                if (metatable != null && metatable.isTableValue() && metatable.getTableValue().containsKey(LuaMetatable.LEN_VAlUE)) {
+                    LuaValue metamethodValue = metatable.getTableValue().get(LuaMetatable.LEN_VAlUE);
+                    if (metamethodValue.isFunctionValue()) {
+                        return metamethodValue.getFunctionValue().apply(List.of(value)).getFirst();
+                    } else {
+                        throw new LuaRuntimeException("call", metamethodValue);
                     }
+
                 }
                 // return table size
                 return new LuaValue(value.getTableValue().size());

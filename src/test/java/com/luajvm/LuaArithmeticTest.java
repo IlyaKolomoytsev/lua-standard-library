@@ -71,6 +71,13 @@ public class LuaArithmeticTest {
         }
     }
 
+    static <T1, T2> void incorrectMetamethodTypeTest(T1 val1, T2 val2, LuaValue metamethod, BiFunction<LuaValue, LuaValue, LuaValue> action) {
+        LuaValue arg1 = LuaValue.create(val1);
+        LuaValue arg2 = LuaValue.create(val2);
+        LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> action.apply(arg1, arg2));
+        assertEquals(metamethod, exception.getArg1());
+    }
+
     @ParameterizedTest
     @MethodSource("addArguments")
     public <T1, T2, E> void addTest(T1 val1, T2 val2, LuaValue.Type type, E expected) {
@@ -231,6 +238,84 @@ public class LuaArithmeticTest {
     @MethodSource("indexExceptionArguments")
     public <T1, T2> void indexExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::index);
+    }
+
+    @ParameterizedTest
+    @MethodSource("addIncorrectMetamethodArguments")
+    public <T1, T2> void addIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::add);
+    }
+
+    @ParameterizedTest
+    @MethodSource("subIncorrectMetamethodArguments")
+    public <T1, T2> void subIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::sub);
+    }
+
+    @ParameterizedTest
+    @MethodSource("mulIncorrectMetamethodArguments")
+    public <T1, T2> void mulIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::mul);
+    }
+
+    @ParameterizedTest
+    @MethodSource("divIncorrectMetamethodArguments")
+    public <T1, T2> void divIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::div);
+    }
+
+    @ParameterizedTest
+    @MethodSource("modIncorrectMetamethodArguments")
+    public <T1, T2> void modIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::mod);
+    }
+
+    @ParameterizedTest
+    @MethodSource("powIncorrectMetamethodArguments")
+    public <T1, T2> void powIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::pow);
+    }
+
+    @ParameterizedTest
+    @MethodSource("unmIncorrectMetamethodArguments")
+    public <T1, T2> void unmIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::unm);
+    }
+
+    @ParameterizedTest
+    @MethodSource("idivIncorrectMetamethodArguments")
+    public <T1, T2> void idivIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::idiv);
+    }
+
+    @ParameterizedTest
+    @MethodSource("lenIncorrectMetamethodArguments")
+    public <T1, T2> void lenIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::len);
+    }
+
+    @ParameterizedTest
+    @MethodSource("eqIncorrectMetamethodArguments")
+    public <T1, T2> void eqIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::eq);
+    }
+
+    @ParameterizedTest
+    @MethodSource("ltIncorrectMetamethodArguments")
+    public <T1, T2> void ltIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::lt);
+    }
+
+    @ParameterizedTest
+    @MethodSource("leIncorrectMetamethodArguments")
+    public <T1, T2> void leIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::le);
+    }
+
+    @ParameterizedTest
+    @MethodSource("indexIncorrectMetamethodArguments")
+    public <T1, T2> void indexIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
+        incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::index);
     }
 
     private static Stream<Arguments> addArguments() {
@@ -1086,6 +1171,99 @@ public class LuaArithmeticTest {
         return argList.stream();
     }
 
+    private static Stream<Arguments> arithmeticIncorrectMetamethodArguments(LuaValue metamethodKey) {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc"),
+                new LuaValue(Map.of())
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val : incorrectValues) {
+            argList.add(Arguments.of(
+                    creteTableWithMetamethod(metamethodKey, val),
+                    Map.of(),
+                    val
+            ));
+        }
+
+        return argList.stream();
+    }
+
+    private static Stream<Arguments> addIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.ADD_VAlUE);
+    }
+
+    private static Stream<Arguments> subIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.SUB_VAlUE);
+    }
+
+    private static Stream<Arguments> mulIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.MUL_VAlUE);
+    }
+
+    private static Stream<Arguments> divIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.DIV_VAlUE);
+    }
+
+    private static Stream<Arguments> modIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.MOD_VAlUE);
+    }
+
+    private static Stream<Arguments> powIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.POW_VAlUE);
+    }
+
+    private static Stream<Arguments> unmIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.UNM_VAlUE);
+    }
+
+    private static Stream<Arguments> idivIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.IDIV_VAlUE);
+    }
+
+    private static Stream<Arguments> lenIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.LEN_VAlUE);
+    }
+
+    private static Stream<Arguments> eqIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.EQ_VAlUE);
+    }
+
+    private static Stream<Arguments> ltIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.LT_VAlUE);
+    }
+
+    private static Stream<Arguments> leIncorrectMetamethodArguments() {
+        return arithmeticIncorrectMetamethodArguments(LuaMetatable.LE_VAlUE);
+    }
+
+    private static Stream<Arguments> indexIncorrectMetamethodArguments() {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc")
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val : incorrectValues) {
+            argList.add(Arguments.of(
+                    creteTableWithMetamethod(LuaMetatable.INDEX_VALUE, val),
+                    "v",
+                    val
+            ));
+        }
+
+        return argList.stream();
+    }
+
     private static LuaValue createTableWithAddMetatableAction(LuaValue value) {
         Map<LuaValue, LuaValue> tableContent = new HashMap<>();
         tableContent.put(new LuaValue("value"), value);
@@ -1452,6 +1630,13 @@ public class LuaArithmeticTest {
 
         table.setMetatable(metatable);
 
+        return table;
+    }
+
+    private static LuaValue creteTableWithMetamethod(LuaValue key, LuaValue value) {
+        LuaValue table = new LuaValue(Map.of());
+        LuaValue metatable = new LuaValue(Map.of(key, value));
+        table.setMetatable(metatable);
         return table;
     }
 }
