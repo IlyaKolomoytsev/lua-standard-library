@@ -368,6 +368,26 @@ class LuaValue {
         }
     }
 
+    public void newIndex(LuaValue key, LuaValue value) {
+        if (isTableValue()) {
+            if (!tableValue.containsKey(key) && metatable != null && metatable.getTableValue().containsKey(LuaMetatable.NEW_INDEX_VALUE)) {
+                LuaValue metamethodValue = metatable.getTableValue().get(LuaMetatable.NEW_INDEX_VALUE);
+                if (metamethodValue.isFunctionValue()) {
+                    metamethodValue.getFunctionValue().apply(List.of(this, key, value));
+                    return;
+                } else if (metamethodValue.isTableValue()) {
+                    metamethodValue.newIndex(key, value);
+                    return;
+                } else {
+                    throw new LuaRuntimeException("index", metamethodValue);
+                }
+            }
+            tableValue.put(key, value);
+        } else {
+            throw new LuaRuntimeException("index", this);
+        }
+    }
+
     static <T> LuaValue create(T value) {
         if (value == null) {
             return new LuaValue();

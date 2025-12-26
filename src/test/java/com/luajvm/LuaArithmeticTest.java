@@ -163,6 +163,17 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("newIndexArguments")
+    public <T, K, V> void newIndexTest(T tableArg, K keyArg, V valueArg) {
+        LuaValue table = LuaValue.create(tableArg);
+        LuaValue key = LuaValue.create(keyArg);
+        LuaValue value = LuaValue.create(valueArg);
+        table.newIndex(key, value);
+
+        assertEquals(table.index(key), value);
+    }
+
+    @ParameterizedTest
     @MethodSource("exceptionArguments")
     public <T1, T2> void addExceptionTest(T1 val1, T2 val2, Arg arg) {
         arithmeticExceptionTest(val1, val2, arg, Arg.none, LuaValue::add);
@@ -241,6 +252,16 @@ public class LuaArithmeticTest {
     }
 
     @ParameterizedTest
+    @MethodSource("newIndexExceptionArguments")
+    public <T, K, V> void newIndexExceptionTest(T tableArg, K keyArg, V valueArg) {
+        LuaValue table = LuaValue.create(tableArg);
+        LuaValue key = LuaValue.create(keyArg);
+        LuaValue value = LuaValue.create(valueArg);
+        LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> table.newIndex(key, value));
+        assertEquals(exception.getArg1(), table);
+    }
+
+    @ParameterizedTest
     @MethodSource("addIncorrectMetamethodArguments")
     public <T1, T2> void addIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
         incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::add);
@@ -316,6 +337,16 @@ public class LuaArithmeticTest {
     @MethodSource("indexIncorrectMetamethodArguments")
     public <T1, T2> void indexIncorrectMetamethodExceptionTest(T1 val1, T2 val2, LuaValue metamethod) {
         incorrectMetamethodTypeTest(val1, val2, metamethod, LuaValue::index);
+    }
+
+    @ParameterizedTest
+    @MethodSource("newIndexIncorrectMetamethodArguments")
+    public <T, K, V> void newIndexIncorrectMetamethodExceptionTest(T tableArg, K keyArg, V valueArg, LuaValue metamethod) {
+        LuaValue table = LuaValue.create(tableArg);
+        LuaValue key = LuaValue.create(keyArg);
+        LuaValue value = LuaValue.create(valueArg);
+        LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> table.newIndex(key, value));
+        assertEquals(metamethod, exception.getArg1());
     }
 
     private static Stream<Arguments> addArguments() {
@@ -1074,6 +1105,15 @@ public class LuaArithmeticTest {
         );
     }
 
+    private static Stream<Arguments> newIndexArguments() {
+        return Stream.of(
+                Arguments.of(new HashMap(), new LuaValue(3), "value"),
+                Arguments.of(new HashMap(Map.of(new LuaValue(3), new LuaValue(0))), new LuaValue(3), "value"),
+                Arguments.of(createTableWithNewIndexMetatableTable(), new LuaValue(3), "value"),
+                Arguments.of(createTableWithNewIndexMetatableFunction(), new LuaValue(3), "value")
+        );
+    }
+
     private static Stream<Arguments> exceptionArguments() {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -1171,6 +1211,25 @@ public class LuaArithmeticTest {
         return argList.stream();
     }
 
+    private static Stream<Arguments> newIndexExceptionArguments() {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc"),
+                new LuaValue((list) -> List.of())
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val : incorrectValues) {
+            argList.add(Arguments.of(val, 1, 1));
+        }
+
+        return argList.stream();
+    }
+
     private static Stream<Arguments> arithmeticIncorrectMetamethodArguments(LuaValue metamethodKey) {
         List<LuaValue> incorrectValues = List.of(
                 new LuaValue(),
@@ -1257,6 +1316,27 @@ public class LuaArithmeticTest {
             argList.add(Arguments.of(
                     creteTableWithMetamethod(LuaMetatable.INDEX_VALUE, val),
                     "v",
+                    val
+            ));
+        }
+
+        return argList.stream();
+    }
+
+    private static Stream<Arguments> newIndexIncorrectMetamethodArguments() {
+        List<LuaValue> incorrectValues = List.of(
+                new LuaValue(),
+                new LuaValue(1),
+                new LuaValue(2d),
+                new LuaValue(true),
+                new LuaValue(false),
+                new LuaValue("abc")
+        );
+
+        List<Arguments> argList = new ArrayList<>();
+        for (LuaValue val : incorrectValues) {
+            argList.add(Arguments.of(
+                    creteTableWithMetamethod(LuaMetatable.NEW_INDEX_VALUE, val), 1, 2,
                     val
             ));
         }
@@ -1626,6 +1706,41 @@ public class LuaArithmeticTest {
         metatableContent.put(LuaMetatable.INDEX_VALUE, new LuaValue(Map.of(
                 new LuaValue("value"), new LuaValue("value")
         )));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithNewIndexMetatableFunction() {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        LuaValue table = new LuaValue(tableContent);
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.NEW_INDEX_VALUE, new LuaValue((args) -> {
+            LuaValue t = args.get(0);
+            LuaValue key = args.get(1);
+            LuaValue value = args.get(2);
+            t.getTableValue().put(key, value);
+            return null;
+        }));
+        LuaValue metatable = new LuaValue(metatableContent);
+
+        table.setMetatable(metatable);
+
+        return table;
+    }
+
+    private static LuaValue createTableWithNewIndexMetatableTable() {
+        Map<LuaValue, LuaValue> tableContent = new HashMap<>();
+        LuaValue table = new LuaValue(tableContent);
+
+        LuaValue parent = new LuaValue(new HashMap<>());
+
+        Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
+        metatableContent.put(LuaMetatable.INDEX_VALUE, parent);
+        metatableContent.put(LuaMetatable.NEW_INDEX_VALUE, parent);
         LuaValue metatable = new LuaValue(metatableContent);
 
         table.setMetatable(metatable);
