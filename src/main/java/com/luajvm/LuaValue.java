@@ -49,19 +49,6 @@ class LuaValue {
     public static final LuaValue NEW_INDEX_VALUE = new LuaValue(NEW_INDEX);
     public static final LuaValue CALL_VAlUE = new LuaValue(CALL);
 
-    public static void assignment(List<LuaValue> left, List<LuaValue> right) {
-        int leftSize = left.size();
-        int rightSize = right.size();
-        for (int i = 0; i < leftSize; i++) {
-            LuaValue val = left.get(i);
-            if (i < rightSize) {
-                val.setValue(right.get(i));
-            }else {
-                val.setValue(new LuaValue());
-            }
-        }
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof LuaValue)) {
