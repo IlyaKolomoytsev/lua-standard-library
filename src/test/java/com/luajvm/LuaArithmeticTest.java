@@ -1307,51 +1307,51 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> addIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.ADD_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.ADD_VAlUE);
     }
 
     private static Stream<Arguments> subIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.SUB_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.SUB_VAlUE);
     }
 
     private static Stream<Arguments> mulIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.MUL_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.MUL_VAlUE);
     }
 
     private static Stream<Arguments> divIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.DIV_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.DIV_VAlUE);
     }
 
     private static Stream<Arguments> modIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.MOD_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.MOD_VAlUE);
     }
 
     private static Stream<Arguments> powIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.POW_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.POW_VAlUE);
     }
 
     private static Stream<Arguments> unmIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.UNM_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.UNM_VAlUE);
     }
 
     private static Stream<Arguments> idivIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.IDIV_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.IDIV_VAlUE);
     }
 
     private static Stream<Arguments> lenIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.LEN_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.LEN_VAlUE);
     }
 
     private static Stream<Arguments> eqIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.EQ_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.EQ_VAlUE);
     }
 
     private static Stream<Arguments> ltIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.LT_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.LT_VAlUE);
     }
 
     private static Stream<Arguments> leIncorrectMetamethodArguments() {
-        return arithmeticIncorrectMetamethodArguments(LuaMetatable.LE_VAlUE);
+        return arithmeticIncorrectMetamethodArguments(LuaValue.LE_VAlUE);
     }
 
     private static Stream<Arguments> indexIncorrectMetamethodArguments() {
@@ -1367,7 +1367,7 @@ public class LuaArithmeticTest {
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
             argList.add(Arguments.of(
-                    creteTableWithMetamethod(LuaMetatable.INDEX_VALUE, val),
+                    creteTableWithMetamethod(LuaValue.INDEX_VALUE, val),
                     "v",
                     val
             ));
@@ -1389,7 +1389,7 @@ public class LuaArithmeticTest {
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
             argList.add(Arguments.of(
-                    creteTableWithMetamethod(LuaMetatable.NEW_INDEX_VALUE, val), 1, 2,
+                    creteTableWithMetamethod(LuaValue.NEW_INDEX_VALUE, val), 1, 2,
                     val
             ));
         }
@@ -1411,7 +1411,7 @@ public class LuaArithmeticTest {
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
             argList.add(Arguments.of(
-                    creteTableWithMetamethod(LuaMetatable.CALL_VAlUE, val), List.of(),
+                    creteTableWithMetamethod(LuaValue.CALL_VAlUE, val), List.of(),
                     val
             ));
         }
@@ -1425,7 +1425,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.ADD_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.ADD_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1452,7 +1452,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.SUB_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.SUB_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1479,7 +1479,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.MUL_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.MUL_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1506,7 +1506,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.DIV_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.DIV_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1533,7 +1533,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.MOD_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.MOD_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1560,7 +1560,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.POW_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.POW_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1587,7 +1587,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.UNM_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.UNM_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.getFirst();
 
             if (arg1.getType() == LuaValue.Type.table) {
@@ -1610,7 +1610,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.IDIV_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.IDIV_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1637,7 +1637,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.CONCAT_VALUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.CONCAT_VALUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1664,7 +1664,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.LEN_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.LEN_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.getFirst();
 
             if (arg1.getType() == LuaValue.Type.table) {
@@ -1687,7 +1687,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.EQ_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.EQ_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1712,7 +1712,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.LT_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.LT_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1737,7 +1737,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.LE_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.LE_VAlUE, new LuaValue((args) -> {
             LuaValue arg1 = args.get(0);
             LuaValue arg2 = args.get(1);
 
@@ -1761,7 +1761,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.INDEX_VALUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.INDEX_VALUE, new LuaValue((args) -> {
             LuaValue arg = args.get(1);
 
             return List.of(arg);
@@ -1778,7 +1778,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.INDEX_VALUE, new LuaValue(Map.of(
+        metatableContent.put(LuaValue.INDEX_VALUE, new LuaValue(Map.of(
                 new LuaValue("value"), new LuaValue("value")
         )));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1793,7 +1793,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.NEW_INDEX_VALUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.NEW_INDEX_VALUE, new LuaValue((args) -> {
             LuaValue t = args.get(0);
             LuaValue key = args.get(1);
             LuaValue value = args.get(2);
@@ -1814,8 +1814,8 @@ public class LuaArithmeticTest {
         LuaValue parent = new LuaValue(new HashMap<>());
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.INDEX_VALUE, parent);
-        metatableContent.put(LuaMetatable.NEW_INDEX_VALUE, parent);
+        metatableContent.put(LuaValue.INDEX_VALUE, parent);
+        metatableContent.put(LuaValue.NEW_INDEX_VALUE, parent);
         LuaValue metatable = new LuaValue(metatableContent);
 
         table.setMetatable(metatable);
@@ -1829,7 +1829,7 @@ public class LuaArithmeticTest {
         LuaValue table = new LuaValue(tableContent);
 
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
-        metatableContent.put(LuaMetatable.CALL_VAlUE, new LuaValue((args) -> {
+        metatableContent.put(LuaValue.CALL_VAlUE, new LuaValue((args) -> {
             LuaValue sum = new LuaValue(0);
             for (LuaValue arg : args) {
                 sum = LuaValue.add(sum, arg);
