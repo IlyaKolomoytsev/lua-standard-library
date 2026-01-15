@@ -21,7 +21,7 @@ final public class LuaFunctions {
                 } catch (NumberFormatException ignored) {
                 }
             default:
-                return List.of(new LuaValue());
+                return List.of(LuaValue.NIL_VALUE);
         }
     }
 
