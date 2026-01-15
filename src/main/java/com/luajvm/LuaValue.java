@@ -49,6 +49,8 @@ class LuaValue {
     public static final LuaValue NEW_INDEX_VALUE = new LuaValue(NEW_INDEX);
     public static final LuaValue CALL_VAlUE = new LuaValue(CALL);
 
+    public static final LuaValue NIL_VALUE = new LuaValue();
+
     public static void assignment(List<LuaValue> left, List<LuaValue> right) {
         int leftSize = left.size();
         int rightSize = right.size();
@@ -464,43 +466,43 @@ class LuaValue {
         }
     }
 
-    LuaValue() {
+    public LuaValue() {
         type = Type.nil;
     }
 
-    LuaValue(LuaValue value) {
+    public LuaValue(LuaValue value) {
         setValue(value);
     }
 
-    LuaValue(boolean value) {
+    public LuaValue(boolean value) {
         setValue(value);
     }
 
-    LuaValue(int value) {
+    public LuaValue(int value) {
         setValue(value);
     }
 
-    LuaValue(long value) {
+    public LuaValue(long value) {
         setValue(value);
     }
 
-    LuaValue(float value) {
+    public LuaValue(float value) {
         setValue(value);
     }
 
-    LuaValue(double value) {
+    public LuaValue(double value) {
         setValue(value);
     }
 
-    LuaValue(String value) {
+    public LuaValue(String value) {
         setValue(value);
     }
 
-    LuaValue(Function<List<LuaValue>, List<LuaValue>> value) {
+    public LuaValue(Function<List<LuaValue>, List<LuaValue>> value) {
         setValue(value);
     }
 
-    LuaValue(Map<LuaValue, LuaValue> value) {
+    public LuaValue(Map<LuaValue, LuaValue> value) {
         setValue(value);
     }
 

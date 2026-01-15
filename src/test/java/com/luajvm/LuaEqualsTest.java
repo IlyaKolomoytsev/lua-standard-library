@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class LuaEqualsTest {
     @Test
     public void equalsNils() {
-        LuaValue val1 = new LuaValue();
-        LuaValue val2 = new LuaValue();
+        LuaValue val1 = LuaValue.NIL_VALUE;
+        LuaValue val2 = LuaValue.NIL_VALUE;
         assertEquals(val1, val2);
     }
 
     @Test
     public void notEqualsNil() {
-        LuaValue val1 = new LuaValue();
+        LuaValue val1 = LuaValue.NIL_VALUE;
         LuaValue[] values = new LuaValue[]{
                 new LuaValue(false),
                 new LuaValue(1),
@@ -44,7 +44,7 @@ public class LuaEqualsTest {
     public void notEqualsBool() {
         LuaValue val1 = new LuaValue(true);
         LuaValue[] values = new LuaValue[]{
-                new LuaValue(),
+                LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(1.2),
                 new LuaValue("string"),
@@ -67,7 +67,7 @@ public class LuaEqualsTest {
     public void notEqualsInteger() {
         LuaValue val1 = new LuaValue(1);
         LuaValue[] values = new LuaValue[]{
-                new LuaValue(),
+                LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue(2),
@@ -92,7 +92,7 @@ public class LuaEqualsTest {
     public void notEqualsReal() {
         LuaValue val1 = new LuaValue(1.1);
         LuaValue[] values = new LuaValue[]{
-                new LuaValue(),
+                LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue(1),
@@ -117,7 +117,7 @@ public class LuaEqualsTest {
     public void notEqualsStrings() {
         LuaValue val1 = new LuaValue("str");
         LuaValue[] values = new LuaValue[]{
-                new LuaValue(),
+                LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue(1),
@@ -143,7 +143,7 @@ public class LuaEqualsTest {
     public void notEqualsFunctions() {
         LuaValue val1 = new LuaValue((args) -> List.of());
         LuaValue[] values = new LuaValue[]{
-                new LuaValue(),
+                LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue(1),
@@ -169,7 +169,7 @@ public class LuaEqualsTest {
     public void notEqualsTables() {
         LuaValue val1 = new LuaValue(new HashMap<>());
         LuaValue[] values = new LuaValue[]{
-                new LuaValue(),
+                LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue(1),
