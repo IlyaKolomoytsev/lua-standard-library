@@ -383,6 +383,10 @@ class LuaValue {
         throw new LuaRuntimeException("compare", left, right);
     }
 
+    public static LuaValue not(LuaValue value){
+        return new LuaValue(!value.getBoolValue());
+    }
+
     public LuaValue index(LuaValue indexValue) {
         if (isTableValue()) {
             if (tableValue.containsKey(indexValue)) {
