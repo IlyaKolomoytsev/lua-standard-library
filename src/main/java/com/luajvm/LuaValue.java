@@ -619,14 +619,18 @@ class LuaValue {
 
     public boolean getBoolValue(boolean save) {
         if (save) {
-            return switch (type) {
-                case nil -> false;
-                case bool -> boolValue;
-                default -> true;
-            };
+            return getBoolValueSave();
         } else {
             return getBoolValue();
         }
+    }
+
+    public boolean getBoolValueSave() {
+        return switch (type) {
+            case nil -> false;
+            case bool -> boolValue;
+            default -> true;
+        };
     }
 
     public boolean getBoolValue() {
