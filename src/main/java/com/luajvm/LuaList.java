@@ -11,4 +11,11 @@ public class LuaList extends ArrayList<LuaValue> {
             return new LuaValue();
         }
     }
+
+    public LuaList subList(int fromIndex) {
+        int realFromIndex = Math.min(fromIndex, size());
+        LuaList subList = new LuaList();
+        subList.addAll(realFromIndex, this);
+        return subList;
+    }
 }
