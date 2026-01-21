@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
-class LuaValue {
+public class LuaValue {
     private static final String NIL = "nil";
     private static final String BOOL = "bool";
     private static final String NUMBER = "number";
