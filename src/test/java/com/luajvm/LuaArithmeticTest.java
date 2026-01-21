@@ -175,9 +175,9 @@ public class LuaArithmeticTest {
 
     @ParameterizedTest
     @MethodSource("callArguments")
-    public <T> void callTest(T valueArg, List<LuaValue> args, List<LuaValue> expectedResults) {
+    public <T> void callTest(T valueArg, LuaList args, LuaList expectedResults) {
         LuaValue value = LuaValue.create(valueArg);
-        List<LuaValue> actualResults = value.call(args);
+        LuaList actualResults = value.call(args);
         assertEquals(expectedResults.size(), actualResults.size());
         for (int i = 0; i < expectedResults.size(); i++) {
             assertEquals(expectedResults.get(i), actualResults.get(i));
@@ -274,7 +274,7 @@ public class LuaArithmeticTest {
 
     @ParameterizedTest
     @MethodSource("callExceptionArguments")
-    public <T> void callExceptionTest(T function, List<LuaValue> arguments) {
+    public <T> void callExceptionTest(T function, LuaList arguments) {
         LuaValue functionVal = LuaValue.create(function);
         LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> functionVal.call(arguments));
         assertEquals(exception.getArg1(), functionVal);
@@ -370,7 +370,7 @@ public class LuaArithmeticTest {
 
     @ParameterizedTest
     @MethodSource("callIncorrectMetamethodArguments")
-    public <T> void callIncorrectMetamethodExceptionTest(T value, List<LuaValue> arguments, LuaValue metamethod) {
+    public <T> void callIncorrectMetamethodExceptionTest(T value, LuaList arguments, LuaValue metamethod) {
         LuaValue tableVal = LuaValue.create(value);
         LuaRuntimeException exception = assertThrows(LuaRuntimeException.class, () -> tableVal.call(arguments));
         assertEquals(metamethod, exception.getArg1());
@@ -979,8 +979,8 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> eqArguments() {
-        Function<List<LuaValue>, List<LuaValue>> func1 = (args) -> List.of();
-        Function<List<LuaValue>, List<LuaValue>> func2 = (args) -> List.of();
+        Function<LuaList, LuaList> func1 = (args) -> new LuaList();
+        Function<LuaList, LuaList> func2 = (args) -> new LuaList();
         Map<LuaValue, LuaValue> table1 = Map.of();
         Map<LuaValue, LuaValue> table2 = Map.of(LuaValue.NIL_VALUE, LuaValue.NIL_VALUE);
 
@@ -1032,15 +1032,15 @@ public class LuaArithmeticTest {
                 Arguments.of(new LuaValue(5), createTableWithEqMetatableAction(new LuaValue(5)), LuaValue.Type.bool, false)
         ));
 
-        List<LuaValue> differentValues = List.of(
+        LuaList differentValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(1),
                 new LuaValue(2d),
                 new LuaValue("abc"),
-                new LuaValue((list) -> List.of()),
+                new LuaValue((list) -> new LuaList()),
                 new LuaValue(Map.of())
-        );
+        ));
 
         for (LuaValue val1 : differentValues) {
             for (LuaValue val2 : differentValues) {
@@ -1143,21 +1143,21 @@ public class LuaArithmeticTest {
 
     private static Stream<Arguments> callArguments() {
         return Stream.of(
-                Arguments.of(new LuaValue((args) -> List.of()), List.of(), List.of()),
-                Arguments.of(new LuaValue((args) -> List.of(new LuaValue(1))), List.of(), List.of(new LuaValue(1))),
-                Arguments.of(createTableWithCallMetatableAction(new LuaValue(1)), List.of(new LuaValue(2), new LuaValue(3)), List.of(new LuaValue(6)))
+                Arguments.of(new LuaValue((args) -> new LuaList(List.of())), new LuaList(List.of()), new LuaList(List.of())),
+                Arguments.of(new LuaValue((args) -> new LuaList(List.of(new LuaValue(1)))), new LuaList(List.of()), new LuaList(List.of(new LuaValue(1)))),
+                Arguments.of(createTableWithCallMetatableAction(new LuaValue(1)), new LuaList(List.of(new LuaValue(2), new LuaValue(3))), new LuaList(List.of(new LuaValue(6))))
         );
     }
 
     private static Stream<Arguments> exceptionArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc"),
-                new LuaValue((list) -> List.of()),
+                new LuaValue((list) -> new LuaList()),
                 new LuaValue(Map.of())
-        );
+        )));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val1 : incorrectValues) {
@@ -1169,14 +1169,14 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> concatExceptionArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc"),
-                new LuaValue((list) -> List.of()),
+                new LuaValue((list) -> new LuaList()),
                 new LuaValue(Map.of())
-        );
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val1 : incorrectValues) {
@@ -1201,19 +1201,19 @@ public class LuaArithmeticTest {
                 Arguments.of(1d, null, Arg.first),
                 Arguments.of(true, null, Arg.first),
                 Arguments.of(false, null, Arg.first),
-                Arguments.of(new LuaValue((list) -> List.of()), null, Arg.first)
+                Arguments.of(new LuaValue((list) -> new LuaList()), null, Arg.first)
         );
     }
 
     private static Stream<Arguments> compareExceptionArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc"),
-                new LuaValue((list) -> List.of()),
+                new LuaValue((list) -> new LuaList()),
                 new LuaValue(Map.of())
-        );
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val1 : incorrectValues) {
@@ -1228,15 +1228,15 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> indexExceptionArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(2d),
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc"),
-                new LuaValue((list) -> List.of())
-        );
+                new LuaValue((list) -> new LuaList())
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
@@ -1247,15 +1247,15 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> newIndexExceptionArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(2d),
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc"),
-                new LuaValue((list) -> List.of())
-        );
+                new LuaValue((list) -> new LuaList())
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
@@ -1266,25 +1266,25 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> callExceptionArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(2d),
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc")
-        );
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
-            argList.add(Arguments.of(val, List.of()));
+            argList.add(Arguments.of(val, new LuaList()));
         }
 
         return argList.stream();
     }
 
     private static Stream<Arguments> arithmeticIncorrectMetamethodArguments(LuaValue metamethodKey) {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(2d),
@@ -1292,7 +1292,7 @@ public class LuaArithmeticTest {
                 new LuaValue(false),
                 new LuaValue("abc"),
                 new LuaValue(Map.of())
-        );
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
@@ -1355,14 +1355,14 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> indexIncorrectMetamethodArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(2d),
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc")
-        );
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
@@ -1377,14 +1377,14 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> newIndexIncorrectMetamethodArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(2d),
                 new LuaValue(true),
                 new LuaValue(false),
                 new LuaValue("abc")
-        );
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
@@ -1398,7 +1398,7 @@ public class LuaArithmeticTest {
     }
 
     private static Stream<Arguments> callIncorrectMetamethodArguments() {
-        List<LuaValue> incorrectValues = List.of(
+        LuaList incorrectValues = new LuaList(List.of(
                 LuaValue.NIL_VALUE,
                 new LuaValue(1),
                 new LuaValue(2d),
@@ -1406,12 +1406,12 @@ public class LuaArithmeticTest {
                 new LuaValue(false),
                 new LuaValue("abc"),
                 new LuaValue(Map.of())
-        );
+        ));
 
         List<Arguments> argList = new ArrayList<>();
         for (LuaValue val : incorrectValues) {
             argList.add(Arguments.of(
-                    creteTableWithMetamethod(LuaValue.CALL_VAlUE, val), List.of(),
+                    creteTableWithMetamethod(LuaValue.CALL_VAlUE, val), new LuaList(),
                     val
             ));
         }
@@ -1431,12 +1431,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.add(val, arg2));
+                return new LuaList(List.of(LuaValue.add(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.add(val, arg1));
+                return new LuaList(List.of(LuaValue.add(val, arg1)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1458,12 +1458,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.sub(val, arg2));
+                return new LuaList(List.of(LuaValue.sub(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.sub(arg1, val));
+                return new LuaList(List.of(LuaValue.sub(arg1, val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1485,12 +1485,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.mul(val, arg2));
+                return new LuaList(List.of(LuaValue.mul(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.mul(arg1, val));
+                return new LuaList(List.of(LuaValue.mul(arg1, val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1512,12 +1512,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.div(val, arg2));
+                return new LuaList(List.of(LuaValue.div(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.div(arg1, val));
+                return new LuaList(List.of(LuaValue.div(arg1, val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1539,12 +1539,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.mod(val, arg2));
+                return new LuaList(List.of(LuaValue.mod(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.mod(arg1, val));
+                return new LuaList(List.of(LuaValue.mod(arg1, val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1566,12 +1566,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.pow(val, arg2));
+                return new LuaList(List.of(LuaValue.pow(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.pow(arg1, val));
+                return new LuaList(List.of(LuaValue.pow(arg1, val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1592,9 +1592,9 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.unm(val));
+                return new LuaList(List.of(LuaValue.unm(val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1616,12 +1616,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.idiv(val, arg2));
+                return new LuaList(List.of(LuaValue.idiv(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.idiv(arg1, val));
+                return new LuaList(List.of(LuaValue.idiv(arg1, val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1643,12 +1643,12 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue val = arg1.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.concat(val, arg2));
+                return new LuaList(List.of(LuaValue.concat(val, arg2)));
             } else if (arg2.getType() == LuaValue.Type.table) {
                 LuaValue val = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.concat(arg1, val));
+                return new LuaList(List.of(LuaValue.concat(arg1, val)));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1669,9 +1669,9 @@ public class LuaArithmeticTest {
 
             if (arg1.getType() == LuaValue.Type.table) {
                 LuaValue length = arg1.getTableValue().get(new LuaValue("length"));
-                return List.of(length);
+                return new LuaList(List.of(length));
             } else {
-                return List.of(LuaValue.NIL_VALUE);
+                return new LuaList(List.of(LuaValue.NIL_VALUE));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1694,9 +1694,9 @@ public class LuaArithmeticTest {
             if (arg1.getType() == LuaValue.Type.table && arg2.getType() == LuaValue.Type.table) {
                 LuaValue val1 = arg1.getTableValue().get(new LuaValue("value"));
                 LuaValue val2 = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.eq(val1, val2));
+                return new LuaList(List.of(LuaValue.eq(val1, val2)));
             } else {
-                return List.of(new LuaValue(false));
+                return new LuaList(List.of(new LuaValue(false)));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1719,9 +1719,9 @@ public class LuaArithmeticTest {
             if (arg1.getType() == LuaValue.Type.table && arg2.getType() == LuaValue.Type.table) {
                 LuaValue val1 = arg1.getTableValue().get(new LuaValue("value"));
                 LuaValue val2 = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.lt(val1, val2));
+                return new LuaList(List.of(LuaValue.lt(val1, val2)));
             } else {
-                return List.of(new LuaValue(false));
+                return new LuaList(List.of(new LuaValue(false)));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1744,9 +1744,9 @@ public class LuaArithmeticTest {
             if (arg1.getType() == LuaValue.Type.table && arg2.getType() == LuaValue.Type.table) {
                 LuaValue val1 = arg1.getTableValue().get(new LuaValue("value"));
                 LuaValue val2 = arg2.getTableValue().get(new LuaValue("value"));
-                return List.of(LuaValue.le(val1, val2));
+                return new LuaList(List.of(LuaValue.le(val1, val2)));
             } else {
-                return List.of(new LuaValue(false));
+                return new LuaList(List.of(new LuaValue(false)));
             }
         }));
         LuaValue metatable = new LuaValue(metatableContent);
@@ -1764,7 +1764,7 @@ public class LuaArithmeticTest {
         metatableContent.put(LuaValue.INDEX_VALUE, new LuaValue((args) -> {
             LuaValue arg = args.get(1);
 
-            return List.of(arg);
+            return new LuaList(List.of(arg));
         }));
         LuaValue metatable = new LuaValue(metatableContent);
 
@@ -1834,7 +1834,7 @@ public class LuaArithmeticTest {
             for (LuaValue arg : args) {
                 sum = LuaValue.add(sum, arg);
             }
-            return List.of(LuaValue.add(sum, value));
+            return new LuaList(List.of(LuaValue.add(sum, value)));
         }));
         LuaValue metatable = new LuaValue(metatableContent);
 

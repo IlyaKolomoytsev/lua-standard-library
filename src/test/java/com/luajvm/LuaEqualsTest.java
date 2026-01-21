@@ -25,7 +25,7 @@ public class LuaEqualsTest {
                 new LuaValue(1),
                 new LuaValue(1.2),
                 new LuaValue("string"),
-                new LuaValue((args) -> List.of()),
+                new LuaValue((args) -> new LuaList()),
                 new LuaValue(new HashMap<>())
         };
         for (LuaValue val2 : values) {
@@ -48,7 +48,7 @@ public class LuaEqualsTest {
                 new LuaValue(1),
                 new LuaValue(1.2),
                 new LuaValue("string"),
-                new LuaValue((args) -> List.of()),
+                new LuaValue((args) -> new LuaList()),
                 new LuaValue(new HashMap<>())
         };
         for (LuaValue val2 : values) {
@@ -73,7 +73,7 @@ public class LuaEqualsTest {
                 new LuaValue(2),
                 new LuaValue(1.2),
                 new LuaValue("string"),
-                new LuaValue((args) -> List.of()),
+                new LuaValue((args) -> new LuaList()),
                 new LuaValue(new HashMap<>())
         };
         for (LuaValue val2 : values) {
@@ -98,7 +98,7 @@ public class LuaEqualsTest {
                 new LuaValue(1),
                 new LuaValue(1.2),
                 new LuaValue("string"),
-                new LuaValue((args) -> List.of()),
+                new LuaValue((args) -> new LuaList()),
                 new LuaValue(new HashMap<>())
         };
         for (LuaValue val2 : values) {
@@ -123,7 +123,7 @@ public class LuaEqualsTest {
                 new LuaValue(1),
                 new LuaValue(1.2),
                 new LuaValue("string"),
-                new LuaValue((args) -> List.of()),
+                new LuaValue((args) -> new LuaList()),
                 new LuaValue(new HashMap<>())
         };
         for (LuaValue val2 : values) {
@@ -133,7 +133,7 @@ public class LuaEqualsTest {
 
     @Test
     public void equalsFunctions() {
-        Function<List<LuaValue>, List<LuaValue>> f = (args) -> List.of();
+        Function<LuaList, LuaList> f = (args) -> new LuaList();
         LuaValue val1 = new LuaValue(f);
         LuaValue val2 = new LuaValue(f);
         assertEquals(val1, val2);
@@ -141,7 +141,7 @@ public class LuaEqualsTest {
 
     @Test
     public void notEqualsFunctions() {
-        LuaValue val1 = new LuaValue((args) -> List.of());
+        LuaValue val1 = new LuaValue((args) -> new LuaList());
         LuaValue[] values = new LuaValue[]{
                 LuaValue.NIL_VALUE,
                 new LuaValue(true),
@@ -149,7 +149,7 @@ public class LuaEqualsTest {
                 new LuaValue(1),
                 new LuaValue(1.2),
                 new LuaValue("string"),
-                new LuaValue((args) -> List.of()),
+                new LuaValue((args) -> new LuaList()),
                 new LuaValue(new HashMap<>())
         };
         for (LuaValue val2 : values) {
@@ -175,7 +175,7 @@ public class LuaEqualsTest {
                 new LuaValue(1),
                 new LuaValue(1.2),
                 new LuaValue("string"),
-                new LuaValue((args) -> List.of()),
+                new LuaValue((args) -> new LuaList()),
                 new LuaValue(new HashMap<>())
         };
         for (LuaValue val2 : values) {

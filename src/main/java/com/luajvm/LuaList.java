@@ -1,8 +1,16 @@
 package com.luajvm;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LuaList extends ArrayList<LuaValue> {
+    public LuaList(List<LuaValue> other) {
+        addAll(other);
+    }
+
+    public LuaList() {
+    }
+
     @Override
     public LuaValue get(int index) {
         if (index < size()) {

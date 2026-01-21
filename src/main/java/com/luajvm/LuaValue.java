@@ -51,7 +51,7 @@ public class LuaValue {
 
     public static final LuaValue NIL_VALUE = new LuaValue();
 
-    public static void assignment(List<LuaValue> left, List<LuaValue> right) {
+    public static void assignment(LuaList left, LuaList right) {
         int leftSize = left.size();
         int rightSize = right.size();
         for (int i = 0; i < leftSize; i++) {
@@ -81,11 +81,11 @@ public class LuaValue {
                 case string -> result = value.getStringValue().equals(this.getStringValue());
                 case function -> result = value.getFunctionValue() == this.getFunctionValue(); // compare pointers
                 case table -> {
-                    Function<List<LuaValue>, List<LuaValue>> metamethod = getFunctionFromMetatable(this, value, EQ_VAlUE);
+                    Function<LuaList, LuaList> metamethod = getFunctionFromMetatable(this, value, EQ_VAlUE);
                     if (metamethod == null) {
                         result = value.getTableValue() == this.getTableValue(); // compare pointers
                     } else {
-                        LuaValue metamethodResult = metamethod.apply(List.of(this, value)).getFirst();
+                        LuaValue metamethodResult = metamethod.apply(new LuaList(List.of(this, value))).getFirst();
                         result = metamethodResult.getBoolValue(true);
                     }
                 }
@@ -117,18 +117,18 @@ public class LuaValue {
         // use metatables functions
         else {
             // get function from metatables
-            Function<List<LuaValue>, List<LuaValue>> function = getFunctionFromMetatable(left, right, metamethod);
+            Function<LuaList, LuaList> function = getFunctionFromMetatable(left, right, metamethod);
             // throw exception if function does not exist
             if (function == null) {
                 LuaValue unsupportedAddValue = leftNumber.isNumber() ? right : left;
                 throw new LuaRuntimeException("perform arithmetic on", unsupportedAddValue);
             }
             // return result of function call
-            return function.apply(List.of(left, right)).getFirst();
+            return function.apply(new LuaList(List.of(left, right))).getFirst();
         }
     }
 
-    private static Function<List<LuaValue>, List<LuaValue>> getFunctionFromMetatable(LuaValue left, LuaValue right, LuaValue metamethodKey) {
+    private static Function<LuaList, LuaList> getFunctionFromMetatable(LuaValue left, LuaValue right, LuaValue metamethodKey) {
         // get function from metatables
         LuaValue leftMetatable = left.getMetatable();
         LuaValue rightMetatable = right.getMetatable();
@@ -248,7 +248,7 @@ public class LuaValue {
             if (metatable != null && metatable.isTableValue() && metatable.getTableValue().containsKey(UNM_VAlUE)) {
                 LuaValue metamethodValue = metatable.getTableValue().get(UNM_VAlUE);
                 if (metamethodValue.isFunctionValue()) {
-                    return metamethodValue.getFunctionValue().apply(List.of(value)).getFirst();
+                    return metamethodValue.getFunctionValue().apply(new LuaList(List.of(value))).getFirst();
                 } else {
                     throw new LuaRuntimeException("call", metamethodValue);
                 }
@@ -306,14 +306,14 @@ public class LuaValue {
         }
         // use metamethod
         else {
-            Function<List<LuaValue>, List<LuaValue>> function = getFunctionFromMetatable(left, right, CONCAT_VALUE);
+            Function<LuaList, LuaList> function = getFunctionFromMetatable(left, right, CONCAT_VALUE);
             // throw exception if function does not exist
             if (function == null) {
                 LuaValue unsupportedAddValue = leftString == null ? left : right;
                 throw new LuaRuntimeException("concatenate", unsupportedAddValue);
             }
             // return result of function call
-            return function.apply(List.of(left, right)).getFirst();
+            return function.apply(new LuaList(List.of(left, right))).getFirst();
         }
     }
 
@@ -332,7 +332,7 @@ public class LuaValue {
                 if (metatable != null && metatable.isTableValue() && metatable.getTableValue().containsKey(LEN_VAlUE)) {
                     LuaValue metamethodValue = metatable.getTableValue().get(LEN_VAlUE);
                     if (metamethodValue.isFunctionValue()) {
-                        return metamethodValue.getFunctionValue().apply(List.of(value)).getFirst();
+                        return metamethodValue.getFunctionValue().apply(new LuaList(List.of(value))).getFirst();
                     } else {
                         throw new LuaRuntimeException("call", metamethodValue);
                     }
@@ -352,9 +352,9 @@ public class LuaValue {
 
     public static LuaValue lt(LuaValue left, LuaValue right) {
         if (left.isTableValue() && right.isTableValue()) {
-            Function<List<LuaValue>, List<LuaValue>> metamethod = getFunctionFromMetatable(left, right, LT_VAlUE);
+            Function<LuaList, LuaList> metamethod = getFunctionFromMetatable(left, right, LT_VAlUE);
             if (metamethod != null)
-                return new LuaValue(metamethod.apply(List.of(left, right)).getFirst().getBoolValue(true));
+                return new LuaValue(metamethod.apply(new LuaList(List.of(left, right))).getFirst().getBoolValue(true));
         } else if (left.isNumber() && right.isNumber()) {
             return new LuaValue(left.getRealValue() < right.getRealValue());
         } else if (left.isStringValue() && right.isStringValue()) {
@@ -366,14 +366,14 @@ public class LuaValue {
     public static LuaValue le(LuaValue left, LuaValue right) {
         if (left.isTableValue() && right.isTableValue()) {
             // use le metamethod
-            Function<List<LuaValue>, List<LuaValue>> leMetamethod = getFunctionFromMetatable(left, right, LE_VAlUE);
+            Function<LuaList, LuaList> leMetamethod = getFunctionFromMetatable(left, right, LE_VAlUE);
             if (leMetamethod != null)
-                return new LuaValue(leMetamethod.apply(List.of(left, right)).getFirst().getBoolValue(true));
+                return new LuaValue(leMetamethod.apply(new LuaList(List.of(left, right))).getFirst().getBoolValue(true));
 
             // use lt metamethod
-            Function<List<LuaValue>, List<LuaValue>> ltMetamethod = getFunctionFromMetatable(left, right, LT_VAlUE);
+            Function<LuaList, LuaList> ltMetamethod = getFunctionFromMetatable(left, right, LT_VAlUE);
             if (ltMetamethod != null) {
-                return new LuaValue(!ltMetamethod.apply(List.of(right, left)).getFirst().getBoolValue(true));
+                return new LuaValue(!ltMetamethod.apply(new LuaList(List.of(right, left))).getFirst().getBoolValue(true));
             }
         } else if (left.isNumber() && right.isNumber()) {
             return new LuaValue(left.getRealValue() <= right.getRealValue());
@@ -399,7 +399,7 @@ public class LuaValue {
                             return indexMetamethod.index(indexValue);
                         }
                         case function -> {
-                            return indexMetamethod.functionValue.apply(List.of(this, indexValue)).getFirst();
+                            return indexMetamethod.functionValue.apply(new LuaList(List.of(this, indexValue))).getFirst();
                         }
                         default -> throw new LuaRuntimeException("index", indexMetamethod);
                     }
@@ -417,7 +417,7 @@ public class LuaValue {
             if (!tableValue.containsKey(key) && metatable != null && metatable.getTableValue().containsKey(NEW_INDEX_VALUE)) {
                 LuaValue metamethodValue = metatable.getTableValue().get(NEW_INDEX_VALUE);
                 if (metamethodValue.isFunctionValue()) {
-                    metamethodValue.getFunctionValue().apply(List.of(this, key, value));
+                    metamethodValue.getFunctionValue().apply(new LuaList(List.of(this, key, value)));
                     return;
                 } else if (metamethodValue.isTableValue()) {
                     metamethodValue.newIndex(key, value);
@@ -432,7 +432,7 @@ public class LuaValue {
         }
     }
 
-    public List<LuaValue> call(List<LuaValue> list) {
+    public LuaList call(LuaList list) {
         if (type == Type.function) {
             return functionValue.apply(list);
         } else if (Objects.requireNonNull(type) == Type.table) {
@@ -460,7 +460,7 @@ public class LuaValue {
         } else if (value instanceof String) {
             return new LuaValue((String) value);
         } else if (value instanceof Function) {
-            return new LuaValue((Function<List<LuaValue>, List<LuaValue>>) value);
+            return new LuaValue((Function<LuaList, LuaList>) value);
         } else if (value instanceof Map) {
             return new LuaValue((Map<LuaValue, LuaValue>) value);
         } else if (value instanceof LuaValue) {
@@ -502,7 +502,7 @@ public class LuaValue {
         setValue(value);
     }
 
-    public LuaValue(Function<List<LuaValue>, List<LuaValue>> value) {
+    public LuaValue(Function<LuaList, LuaList> value) {
         setValue(value);
     }
 
@@ -588,7 +588,7 @@ public class LuaValue {
         stringValue = value;
     }
 
-    public void setValue(Function<List<LuaValue>, List<LuaValue>> value) {
+    public void setValue(Function<LuaList, LuaList> value) {
         type = Type.function;
         functionValue = value;
     }
@@ -670,7 +670,7 @@ public class LuaValue {
         }
     }
 
-    public Function<List<LuaValue>, List<LuaValue>> getFunctionValue() {
+    public Function<LuaList, LuaList> getFunctionValue() {
         if (!isFunctionValue()) {
             throw getCantGetPrimitiveValueException(FUNCTION);
         }
@@ -711,7 +711,7 @@ public class LuaValue {
     private long integerValue = 0;
     private double realValue = 0;
     private String stringValue = null;
-    private Function<List<LuaValue>, List<LuaValue>> functionValue = null;
+    private Function<LuaList, LuaList> functionValue = null;
     private Map<LuaValue, LuaValue> tableValue = null;
     private LuaValue metatable = null;
 }
