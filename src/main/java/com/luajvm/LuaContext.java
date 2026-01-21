@@ -79,7 +79,7 @@ public class LuaContext {
      * @param id variable identifier
      */
     public void declareLocal(String id) {
-        locals.put(id, LuaValue.NIL_VALUE);
+        locals.put(id, new LuaValue());
     }
 
     /**
