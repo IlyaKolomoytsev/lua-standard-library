@@ -56,6 +56,23 @@ public class LuaContext {
         }
     }
 
+    public LuaValue getOrCreateGlobal(String id) {
+        if (locals.containsKey(id)) {
+            return locals.get(id);
+        }
+
+        if (isRootContext()) {
+            if (baseFunctions.containsKey(id)) {
+                return new LuaValue(baseFunctions.get(id));
+            }
+            LuaValue newValue = new LuaValue();
+            locals.put(id, newValue);
+            return newValue;
+        } else {
+            return parent.get(id);
+        }
+    }
+
     /**
      * Assigns a value to a variable.
      *
