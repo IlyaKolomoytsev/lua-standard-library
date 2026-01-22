@@ -71,4 +71,12 @@ final public class LuaFunctions {
             loopBlock.apply(parameters);
         }
     }
+
+    static LuaList print(LuaList args) {
+        for (int i = 0; i < args.size() - 1; i++) {
+            System.out.print(args.get(i) + "\t");
+        }
+        System.out.println(args.getLast());
+        return new LuaList();
+    }
 }

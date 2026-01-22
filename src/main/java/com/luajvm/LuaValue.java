@@ -58,7 +58,7 @@ public class LuaValue {
             LuaValue val = left.get(i);
             if (i < rightSize) {
                 val.setValue(right.get(i));
-            }else {
+            } else {
                 val.setValue(new LuaValue());
             }
         }
@@ -91,6 +91,35 @@ public class LuaValue {
                 }
             }
             return result;
+        }
+    }
+
+
+    @Override
+    public String toString() {
+        switch (type) {
+            case nil -> {
+                return "nil";
+            }
+            case bool -> {
+                return boolValue ? "true" : "false";
+            }
+            case integer -> {
+                return String.valueOf(integerValue);
+            }
+            case real -> {
+                return String.valueOf(realValue);
+            }
+            case string -> {
+                return stringValue;
+            }
+            case function -> {
+                return functionValue.toString();
+            }
+            case table -> {
+                return tableValue.toString();
+            }
+            default -> throw new IllegalArgumentException("Unknown type: " + type);
         }
     }
 
@@ -383,7 +412,7 @@ public class LuaValue {
         throw new LuaRuntimeException("compare", left, right);
     }
 
-    public static LuaValue not(LuaValue value){
+    public static LuaValue not(LuaValue value) {
         return new LuaValue(!value.getBoolValue());
     }
 

@@ -47,7 +47,10 @@ public class LuaContext {
         }
 
         if (isRootContext()) {
-            return LuaValue.NIL_VALUE;
+            if (baseFunctions.containsKey(id)) {
+                return new LuaValue(baseFunctions.get(id));
+            }
+            return new LuaValue();
         } else {
             return parent.get(id);
         }
@@ -112,4 +115,8 @@ public class LuaContext {
      * Map storing variables declared in this context.
      */
     private final Map<String, LuaValue> locals = new HashMap<>();
+
+    private static Map<String, LuaValue> baseFunctions = Map.of(
+            "print", new LuaValue(LuaFunctions::print)
+    );
 }
