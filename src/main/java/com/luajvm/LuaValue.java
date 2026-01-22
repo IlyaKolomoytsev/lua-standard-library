@@ -413,7 +413,11 @@ public class LuaValue {
     }
 
     public static LuaValue not(LuaValue value) {
-        return new LuaValue(!value.getBoolValue());
+        if (value.type == Type.nil || (value.isBoolValue() && !value.getBoolValue())){
+            return new LuaValue(true);
+        } else {
+            return new LuaValue(false);
+        }
     }
 
     public LuaValue index(LuaValue indexValue) {
