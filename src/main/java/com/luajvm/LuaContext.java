@@ -30,6 +30,10 @@ public class LuaContext {
         this.parent = parent;
     }
 
+    public LuaContext getParent() {
+        return parent;
+    }
+
     /**
      * Resolves a variable by its identifier.
      *
