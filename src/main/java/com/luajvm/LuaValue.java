@@ -54,13 +54,19 @@ public class LuaValue {
     public static void assignment(LuaList left, LuaList right) {
         int leftSize = left.size();
         int rightSize = right.size();
+
+        LuaValue[] temp = new LuaValue[leftSize];
         for (int i = 0; i < leftSize; i++) {
-            LuaValue val = left.get(i);
             if (i < rightSize) {
-                val.setValue(right.get(i));
+                temp[i] = new LuaValue(right.get(i));
             } else {
-                val.setValue(new LuaValue());
+                temp[i] = new LuaValue();
             }
+        }
+
+        for (int i = 0; i < leftSize; i++) {
+            LuaValue target = left.get(i);
+            target.setValue(temp[i]);
         }
     }
 
