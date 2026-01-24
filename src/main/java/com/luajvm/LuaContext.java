@@ -73,7 +73,7 @@ public class LuaContext {
             locals.put(id, newValue);
             return newValue;
         } else {
-            return parent.get(id);
+            return parent.getOrCreateGlobal(id);
         }
     }
 
