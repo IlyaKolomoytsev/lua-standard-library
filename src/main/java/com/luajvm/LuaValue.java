@@ -482,6 +482,7 @@ public class LuaValue {
             if (metatable != null && metatable.isTableValue() && metatable.getTableValue().containsKey(CALL_VAlUE)) {
                 LuaValue metamethodValue = metatable.getTableValue().get(CALL_VAlUE);
                 if (metamethodValue.isFunctionValue()) {
+                    list.addFirst(this);
                     return metamethodValue.getFunctionValue().apply(list);
                 } else {
                     throw new LuaRuntimeException("call", metamethodValue);

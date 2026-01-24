@@ -1831,8 +1831,8 @@ public class LuaArithmeticTest {
         Map<LuaValue, LuaValue> metatableContent = new HashMap<>();
         metatableContent.put(LuaValue.CALL_VAlUE, new LuaValue((args) -> {
             LuaValue sum = new LuaValue(0);
-            for (LuaValue arg : args) {
-                sum = LuaValue.add(sum, arg);
+            for (int i = 1; i < args.size(); i++) {
+                sum = LuaValue.add(sum, args.get(i));
             }
             return new LuaList(List.of(LuaValue.add(sum, value)));
         }));
