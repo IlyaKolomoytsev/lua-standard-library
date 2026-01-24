@@ -114,18 +114,29 @@ final public class LuaFunctions {
     }
 
     static LuaList pcall(LuaList args) {
+        if (args == null || args.size() == 0) {
+            return new LuaList(List.of(new LuaValue(false), new LuaValue("pcall: function expected")));
+        }
+
         try {
             LuaValue func = args.getFirst();
 
             LuaList rest = new LuaList();
-            for (int i = 1; i < args.size(); i++) {
-                rest.add(args.get(i));
+            if (args.size() > 1) {
+                rest.addAll(args.subList(1, args.size()));
             }
 
             LuaList result = func.call(rest);
-            return new LuaList(List.of(new LuaValue(true), result.getFirst()));
+
+            LuaList out = new LuaList();
+            out.add(new LuaValue(true));
+            if (result != null && result.size() > 0) {
+                out.addAll(result);
+            }
+            return out;
+
         } catch (LuaRuntimeException e) {
-            return new LuaList(List.of(new LuaValue(false), e.getValue()));
+            return new LuaList(List.of(new LuaValue(false), new LuaValue(e.getMessage())));
         }
     }
 }
