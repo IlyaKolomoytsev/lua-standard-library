@@ -90,4 +90,21 @@ final public class LuaFunctions {
         }
         return new LuaList(List.of(LuaValue.NIL_VALUE));
     }
+
+    static public LuaList setMetatable(LuaList args) {
+        LuaValue t  = !args.isEmpty() ? args.get(0) : LuaValue.NIL_VALUE;
+        LuaValue mt = args.size() > 1 ? args.get(1) : LuaValue.NIL_VALUE;
+
+        if (!t.isTableValue()) {
+            throw new LuaRuntimeException("setmetatable", t);
+        }
+
+        if (!mt.isNil() && !mt.isTableValue()) {
+            throw new LuaRuntimeException("setmetatable", mt);
+        }
+
+        t.setMetatable(mt.isNil() ? null : mt);
+
+        return new LuaList(List.of(t));
+    }
 }
