@@ -431,6 +431,10 @@ public class LuaValue {
             if (tableValue.containsKey(indexValue)) {
                 return tableValue.get(indexValue);
             } else {
+                if (metatable == null || !metatable.isTableValue()) {
+                    return new LuaValue(); // nil
+                }
+
                 if (metatable.tableValue.containsKey(INDEX_VALUE)) {
                     LuaValue indexMetamethod = metatable.tableValue.get(INDEX_VALUE);
                     switch (indexMetamethod.type) {
