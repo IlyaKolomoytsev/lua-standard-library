@@ -2,8 +2,12 @@ package com.luajvm;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.Scanner;
 
 final public class LuaFunctions {
+
+    private static final Scanner SCANNER = new Scanner(System.in);
+
     static public LuaList toNumber(LuaValue value) {
         LuaValue.Type type = value.getType();
         switch (type) {
@@ -78,5 +82,12 @@ final public class LuaFunctions {
         }
         System.out.println(args.getLast());
         return new LuaList();
+    }
+
+    static public LuaList read(LuaList args) {
+        if (SCANNER.hasNextLine()) {
+            return new LuaList(List.of(new LuaValue(SCANNER.nextLine())));
+        }
+        return new LuaList(List.of(LuaValue.NIL_VALUE));
     }
 }

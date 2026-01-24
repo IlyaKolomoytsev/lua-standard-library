@@ -138,6 +138,10 @@ public class LuaContext {
     private final Map<String, LuaValue> locals = new HashMap<>();
 
     private static Map<String, LuaValue> baseFunctions = Map.of(
-            "print", new LuaValue(LuaFunctions::print)
+            "print", new LuaValue(LuaFunctions::print),
+            "io", new LuaValue(Map.of(
+                    new LuaValue("read"), new LuaValue(LuaFunctions::read)
+            )
+            )
     );
 }
