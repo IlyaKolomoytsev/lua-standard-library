@@ -107,4 +107,25 @@ final public class LuaFunctions {
 
         return new LuaList(List.of(t));
     }
+
+    static public LuaList error(LuaList args) {
+        LuaValue v = args.isEmpty() ? LuaValue.NIL_VALUE : args.getFirst();
+        throw new LuaRuntimeException(v);
+    }
+
+    static LuaList pcall(LuaList args) {
+        try {
+            LuaValue func = args.getFirst();
+
+            LuaList rest = new LuaList();
+            for (int i = 1; i < args.size(); i++) {
+                rest.add(args.get(i));
+            }
+
+            LuaList result = func.call(rest);
+            return new LuaList(List.of(new LuaValue(true), result.getFirst()));
+        } catch (LuaRuntimeException e) {
+            return new LuaList(List.of(new LuaValue(false), e.getValue()));
+        }
+    }
 }
