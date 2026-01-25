@@ -120,10 +120,10 @@ public class LuaValue {
                 return stringValue;
             }
             case function -> {
-                return functionValue.toString();
+                return "function: " + Integer.toHexString(System.identityHashCode(functionValue));
             }
             case table -> {
-                return tableValue.toString();
+                return "table: " + Integer.toHexString(System.identityHashCode(tableValue));
             }
             default -> throw new IllegalArgumentException("Unknown type: " + type);
         }
