@@ -419,7 +419,7 @@ public class LuaValue {
     }
 
     public static LuaValue not(LuaValue value) {
-        if (value.type == Type.nil || (value.isBoolValue() && !value.getBoolValue())){
+        if (value.type == Type.nil || (value.isBoolValue() && !value.getBoolValue())) {
             return new LuaValue(true);
         } else {
             return new LuaValue(false);
@@ -428,15 +428,15 @@ public class LuaValue {
 
     public LuaValue index(LuaValue indexValue) {
         if (isTableValue()) {
-            if (tableValue.containsKey(indexValue)) {
-                return tableValue.get(indexValue);
+            if (tableValue.table.containsKey(indexValue)) {
+                return tableValue.table.get(indexValue);
             } else {
-                if (metatable == null || !metatable.isTableValue()) {
+                if (tableValue.metatable == null) {
                     return new LuaValue(); // nil
                 }
 
-                if (metatable.tableValue.containsKey(INDEX_VALUE)) {
-                    LuaValue indexMetamethod = metatable.tableValue.get(INDEX_VALUE);
+                if (tableValue.metatable.table.containsKey(INDEX_VALUE)) {
+                    LuaValue indexMetamethod = tableValue.metatable.table.get(INDEX_VALUE);
                     switch (indexMetamethod.type) {
                         case table -> {
                             return indexMetamethod.index(indexValue);
@@ -457,8 +457,8 @@ public class LuaValue {
 
     public void newIndex(LuaValue key, LuaValue value) {
         if (isTableValue()) {
-            if (!tableValue.containsKey(key) && metatable != null && metatable.getTableValue().containsKey(NEW_INDEX_VALUE)) {
-                LuaValue metamethodValue = metatable.getTableValue().get(NEW_INDEX_VALUE);
+            if (!tableValue.table.containsKey(key) && tableValue.metatable != null && tableValue.metatable.table.containsKey(NEW_INDEX_VALUE)) {
+                LuaValue metamethodValue = tableValue.metatable.table.get(NEW_INDEX_VALUE);
                 if (metamethodValue.isFunctionValue()) {
                     metamethodValue.getFunctionValue().apply(new LuaList(List.of(this, key, value)));
                     return;
@@ -469,7 +469,7 @@ public class LuaValue {
                     throw new LuaRuntimeException("index", metamethodValue);
                 }
             }
-            tableValue.put(key, value);
+            tableValue.table.put(key, value);
         } else {
             throw new LuaRuntimeException("index", this);
         }
@@ -479,8 +479,8 @@ public class LuaValue {
         if (type == Type.function) {
             return functionValue.apply(list);
         } else if (Objects.requireNonNull(type) == Type.table) {
-            if (metatable != null && metatable.isTableValue() && metatable.getTableValue().containsKey(CALL_VAlUE)) {
-                LuaValue metamethodValue = metatable.getTableValue().get(CALL_VAlUE);
+            if (tableValue.metatable != null && tableValue.metatable.table.containsKey(CALL_VAlUE)) {
+                LuaValue metamethodValue = tableValue.metatable.table.get(CALL_VAlUE);
                 if (metamethodValue.isFunctionValue()) {
                     list.addFirst(this);
                     return metamethodValue.getFunctionValue().apply(list);
@@ -554,6 +554,10 @@ public class LuaValue {
         setValue(value);
     }
 
+    public LuaValue(LuaTable value) {
+        setValue(value);
+    }
+
     public boolean isNil() {
         return type == Type.nil;
     }
@@ -608,7 +612,6 @@ public class LuaValue {
                 break;
             case table:
                 tableValue = value.tableValue;
-                metatable = value.metatable;
                 break;
         }
     }
@@ -640,11 +643,23 @@ public class LuaValue {
 
     public void setValue(Map<LuaValue, LuaValue> value) {
         type = Type.table;
+        if (tableValue==null) {
+            tableValue = new LuaTable();
+        }
+        tableValue.table = value;
+    }
+
+    public void setValue(LuaTable value) {
+        type = Type.table;
         tableValue = value;
     }
 
-    public void setMetatable(LuaValue metatable) {
-        this.metatable = metatable;
+    public void setMetatable(LuaValue value) {
+        if (value.isTableValue()) {
+            this.tableValue.metatable = value.tableValue;
+        } else {
+            this.tableValue.metatable = null;
+        }
     }
 
     public Type getType() {
@@ -726,14 +741,14 @@ public class LuaValue {
         if (!isTableValue()) {
             throw getCantGetPrimitiveValueException(TABLE);
         }
-        return tableValue;
+        return tableValue.table;
     }
 
     public LuaValue getMetatable() {
-        if (metatable == null || type != Type.table) {
+        if (type != Type.table || tableValue.metatable == null) {
             return new LuaValue();
         } else {
-            return metatable;
+            return new LuaValue(tableValue.metatable);
         }
     }
 
@@ -757,6 +772,18 @@ public class LuaValue {
     private double realValue = 0;
     private String stringValue = null;
     private Function<LuaList, LuaList> functionValue = null;
-    private Map<LuaValue, LuaValue> tableValue = null;
-    private LuaValue metatable = null;
+    private LuaTable tableValue =null;
+
+    public static class LuaTable {
+        public LuaTable() {
+        }
+
+        public LuaTable(Map<LuaValue, LuaValue> table, LuaTable metatable) {
+            this.table = table;
+            this.metatable = metatable;
+        }
+
+        public Map<LuaValue, LuaValue> table = null;
+        public LuaTable metatable = null;
+    }
 }
