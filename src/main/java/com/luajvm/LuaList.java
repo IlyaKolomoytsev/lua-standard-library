@@ -20,6 +20,16 @@ public class LuaList extends ArrayList<LuaValue> {
         }
     }
 
+    @Override
+    public LuaValue getFirst(){
+        return get(0);
+    }
+
+    @Override
+    public LuaValue getLast(){
+        return get(Math.max(0, size() - 1));
+    }
+
     public LuaList subList(int fromIndex) {
         int realFromIndex = Math.min(fromIndex, size());
         LuaList subList = new LuaList();
