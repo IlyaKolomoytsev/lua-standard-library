@@ -140,6 +140,7 @@ public class LuaContext {
     private static Map<String, LuaValue> baseFunctions = Map.of(
             "print", new LuaValue(LuaFunctions::print),
             "setmetatable", new LuaValue(LuaFunctions::setMetatable),
+            "getmetatable", new LuaValue(LuaFunctions::getMetatable),
             "error", new LuaValue(LuaFunctions::error),
             "pcall", new LuaValue(LuaFunctions::pcall),
             "io", new LuaValue(Map.of(

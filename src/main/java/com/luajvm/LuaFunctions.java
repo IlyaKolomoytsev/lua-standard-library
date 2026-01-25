@@ -104,6 +104,11 @@ final public class LuaFunctions {
         return new LuaList(List.of(t));
     }
 
+    static public LuaList getMetatable(LuaList args) {
+        LuaValue t  = args.getFirst();
+        return new LuaList(List.of(t.getMetatable()));
+    }
+
     static public LuaList error(LuaList args) {
         LuaValue v = args.isEmpty() ? LuaValue.NIL_VALUE : args.getFirst();
         throw new LuaRuntimeException(v);
