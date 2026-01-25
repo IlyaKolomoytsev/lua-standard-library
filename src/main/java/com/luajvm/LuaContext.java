@@ -143,6 +143,10 @@ public class LuaContext {
             "getmetatable", new LuaValue(LuaFunctions::getMetatable),
             "error", new LuaValue(LuaFunctions::error),
             "pcall", new LuaValue(LuaFunctions::pcall),
+            "string", new LuaValue(Map.of(
+                    new LuaValue("format"), new LuaValue(LuaFunctions::format)
+            )
+            ),
             "io", new LuaValue(Map.of(
                     new LuaValue("read"), new LuaValue(LuaFunctions::read)
             )

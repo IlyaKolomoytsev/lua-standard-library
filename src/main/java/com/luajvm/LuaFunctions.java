@@ -92,7 +92,7 @@ final public class LuaFunctions {
     }
 
     static public LuaList setMetatable(LuaList args) {
-        LuaValue t  = args.get(0);
+        LuaValue t = args.get(0);
         LuaValue mt = args.get(1);
 
         if (!t.isTableValue()) {
@@ -105,7 +105,7 @@ final public class LuaFunctions {
     }
 
     static public LuaList getMetatable(LuaList args) {
-        LuaValue t  = args.getFirst();
+        LuaValue t = args.getFirst();
         return new LuaList(List.of(t.getMetatable()));
     }
 
@@ -140,4 +140,47 @@ final public class LuaFunctions {
             return new LuaList(List.of(new LuaValue(false), new LuaValue(e.getMessage())));
         }
     }
+
+    static public LuaList format(LuaList args) {
+        if (args.isEmpty()) {
+            return new LuaList(List.of(LuaValue.NIL_VALUE));
+        }
+
+        String format = args.get(0).getStringValue();
+        StringBuilder result = new StringBuilder();
+
+        int argIndex = 1;
+
+        for (int i = 0; i < format.length(); i++) {
+            char c = format.charAt(i);
+
+            if (c == '%' && i + 1 < format.length()) {
+                char spec = format.charAt(++i);
+
+                if (spec == '%') {
+                    result.append('%');
+                    continue;
+                }
+
+                if (argIndex >= args.size()) {
+                    return new LuaList(List.of(LuaValue.NIL_VALUE));
+                }
+
+                LuaValue value = args.get(argIndex++);
+
+                switch (spec) {
+                    case 's' -> result.append(value.getStringValue());
+                    case 'd' -> result.append(value.getIntegerValue());
+                    case 'f' -> result.append(value.getRealValue());
+                    case 'c' -> result.append((char) value.getIntegerValue());
+                    default -> result.append('%').append(spec);
+                }
+            } else {
+                result.append(c);
+            }
+        }
+
+        return new LuaList(List.of(new LuaValue(result.toString())));
+    }
+
 }
