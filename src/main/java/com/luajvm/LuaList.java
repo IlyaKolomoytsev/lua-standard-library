@@ -23,7 +23,9 @@ public class LuaList extends ArrayList<LuaValue> {
     public LuaList subList(int fromIndex) {
         int realFromIndex = Math.min(fromIndex, size());
         LuaList subList = new LuaList();
-        subList.addAll(realFromIndex, this);
+        for (int i = realFromIndex; i < size(); i++) {
+            subList.add(get(i));
+        }
         return subList;
     }
 }
