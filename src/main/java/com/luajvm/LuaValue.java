@@ -608,6 +608,7 @@ public class LuaValue {
                 break;
             case table:
                 tableValue = value.tableValue;
+                metatable = value.metatable;
                 break;
         }
     }
