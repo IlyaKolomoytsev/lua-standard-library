@@ -183,4 +183,19 @@ final public class LuaFunctions {
         return new LuaList(List.of(new LuaValue(result.toString())));
     }
 
+    static public LuaList rawset(LuaList args) {
+        LuaValue table = args.get(0);
+        LuaValue key = args.get(1);
+        LuaValue value = args.get(2);
+
+        if (!table.isTableValue()) {
+            throw new RuntimeException("bad argument #1 to 'rawset' (table expected, got " + table.getTypeString() + ")");
+        }
+
+        if (key.isNil()) {
+            throw new RuntimeException("table index is nil");
+        }
+        table.getTableValue().put(key, value);
+        return new LuaList(List.of(table));
+    }
 }

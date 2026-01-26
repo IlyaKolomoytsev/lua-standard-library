@@ -144,6 +144,7 @@ public class LuaContext {
             "error", new LuaValue(LuaFunctions::error),
             "pcall", new LuaValue(LuaFunctions::pcall),
             "type", new LuaValue(LuaFunctions::type),
+            "rawset", new LuaValue(LuaFunctions::rawset),
             "string", new LuaValue(Map.of(
                     new LuaValue("format"), new LuaValue(LuaFunctions::format)
             )
