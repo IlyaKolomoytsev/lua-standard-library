@@ -145,6 +145,7 @@ public class LuaContext {
             "pcall", new LuaValue(LuaFunctions::pcall),
             "type", new LuaValue(LuaFunctions::type),
             "rawset", new LuaValue(LuaFunctions::rawset),
+            "tonumber", new LuaValue(LuaFunctions::toNumber),
             "string", new LuaValue(Map.of(
                     new LuaValue("format"), new LuaValue(LuaFunctions::format)
             )
